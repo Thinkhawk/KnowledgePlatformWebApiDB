@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="../KnowledgePlatformWebApiDB/KnowledgePlatformWebApiDB/KnowledgePlatformWebApiDB.csproj" />
+  <Project Path="KnowledgePlatformWebApiDB.Auth/KnowledgePlatformWebApiDB.Auth.csproj" />
+  <Project Path="KnowledgePlatformWebApiDB.Data/KnowledgePlatformWebApiDB.Data.csproj" />
+  <Project Path="KnowledgePlatformWebApiDB.DtoModels/KnowledgePlatformWebApiDB.DtoModels.csproj" />
+  <Project Path="KnowledgePlatformWebApiDB.Infrastructure/KnowledgePlatformWebApiDB.Infrastructure.csproj" />
+  <Project Path="KnowledgePlatformWebApiDB.Services/KnowledgePlatformWebApiDB.Services.csproj" />
+  <Project Path="KnowledgePlatformWebApiDB.Tests/KnowledgePlatformWebApiDB.Tests.csproj" />
+</Solution>

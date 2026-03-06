@@ -1,0 +1,6 @@
+@KnowledgePlatformWebApiDB_HostAddress = http://localhost:5260
+
+GET {{KnowledgePlatformWebApiDB_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
