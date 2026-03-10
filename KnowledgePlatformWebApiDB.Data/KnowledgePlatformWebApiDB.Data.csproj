@@ -10,4 +10,14 @@
     <Folder Include="Entities\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KnowledgePlatformWebApiDB.DtoModels\KnowledgePlatformWebApiDB.DtoModels.csproj" />
+    <ProjectReference Include="..\KnowledgePlatformWebApiDB.Infrastructure\KnowledgePlatformWebApiDB.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
