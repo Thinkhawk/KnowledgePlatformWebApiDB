@@ -32,10 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\KnowledgePlatformWebApiDB.Auth\KnowledgePlatformWebApiDB.Auth.csproj" />
     <ProjectReference Include="..\KnowledgePlatformWebApiDB.Data\KnowledgePlatformWebApiDB.Data.csproj" />
     <ProjectReference Include="..\KnowledgePlatformWebApiDB.DtoModels\KnowledgePlatformWebApiDB.DtoModels.csproj" />
