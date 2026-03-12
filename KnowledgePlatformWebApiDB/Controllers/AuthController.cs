@@ -33,34 +33,8 @@ namespace KnowledgePlatformWebApiDB.Controllers
             });
         }
 
-        // CREATE USER API
-        [HttpPost("create-user")]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
-        {
-            var result = await _authService.CreateUserAsync(dto);
-
-            if (!result.Success)
-            {
-                return BadRequest(result.Message);
-            }
-
-            return Ok(new
-            {
-                message = result.Message
-            });
-        }
 
 
-        // Reset of the default password.....
-        [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
-        {
-            var result = await _authService.ResetPasswordAsync(dto);
-
-            if (!result.Success)
-                return BadRequest(result.Message);
-
-            return Ok(result.Message);
-        }
+        
     }
 }

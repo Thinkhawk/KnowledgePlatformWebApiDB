@@ -87,16 +87,16 @@ namespace KnowledgePlatformWebApiDB.Data.Data
                 "ReadNote","WriteNote"
             };
 
-            rolePermissions.AddRange(CreateRolePermissions(adminRole.Id, permissions, adminPermissions));
-            rolePermissions.AddRange(CreateRolePermissions(leadRole.Id, permissions, leadPermissions));
-            rolePermissions.AddRange(CreateRolePermissions(memberRole.Id, permissions, memberPermissions));
+           rolePermissions.AddRange(CreateRolePermissions(adminRole.Id, permissions, adminPermissions));
+           rolePermissions.AddRange(CreateRolePermissions(leadRole.Id, permissions, leadPermissions));
+           rolePermissions.AddRange(CreateRolePermissions(memberRole.Id, permissions, memberPermissions));
 
             await context.RolePermissions.AddRangeAsync(rolePermissions);
             await context.SaveChangesAsync();
         }
 
         private static IEnumerable<RolePermission> CreateRolePermissions(
-            int roleId,
+            string roleId,
             List<Permission> permissions,
             string[] permissionNames)
         {

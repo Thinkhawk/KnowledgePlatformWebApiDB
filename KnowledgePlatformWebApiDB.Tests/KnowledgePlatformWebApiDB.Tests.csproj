@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KnowledgePlatformWebApiDB.Data\KnowledgePlatformWebApiDB.Data.csproj" />
     <ProjectReference Include="..\KnowledgePlatformWebApiDB\KnowledgePlatformWebApiDB.csproj" />
   </ItemGroup>
 

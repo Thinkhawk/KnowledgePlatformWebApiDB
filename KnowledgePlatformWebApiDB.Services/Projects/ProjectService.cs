@@ -56,7 +56,7 @@ public sealed class ProjectService
             entity.Name,
             entity.Description,
             entity.CreatedAtUtc,
-            entity.ModifiedAtUtc,
+            entity.UpdatedAtUtc,
             RowVersionHelper.ToBase64(entity.RowVersion)
         );
 
@@ -76,7 +76,7 @@ public sealed class ProjectService
                 e.Name,
                 e.Description,
                 e.CreatedAtUtc,
-                e.ModifiedAtUtc,
+                e.UpdatedAtUtc,
                 RowVersionHelper.ToBase64(e.RowVersion)
             ))
             .ToList()

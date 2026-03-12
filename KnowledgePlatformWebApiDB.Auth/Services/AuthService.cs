@@ -41,53 +41,7 @@ namespace KnowledgePlatformWebApiDB.Auth.Services
             return (true, "Login successful.", token);
         }
 
-        // CREATE USER METHOD
-        public async Task<(bool Success, string Message)> CreateUserAsync(CreateUserDto dto)
-        {
-            var existingUser = await _userManager.FindByNameAsync(dto.Username);
-
-            if (existingUser != null)
-            {
-                return (false, "User already exists.");
-            }
-
-            var user = new ApplicationUser
-            {
-                UserName = dto.Username,
-                Email = dto.Email,
-                FullName = dto.FullName,
-                EmailConfirmed = false
-            };
-
-            //default password for the new added user 
-            string defaultPassword = "Temp@123456";
-
-            var result = await _userManager.CreateAsync(user, defaultPassword);
-
-            if (!result.Succeeded)
-            {
-                return (false, "User creation failed.");
-            }
-
-            await _userManager.AddToRoleAsync(user, dto.Role);
-
-            return (true, "User created successfully with default password.");
-        }
 
 
-        public async Task<(bool Success, string Message)> ResetPasswordAsync(ResetPasswordDto dto)
-        {
-            var user = await _userManager.FindByEmailAsync(dto.Email);
-
-            if (user == null)
-                return (false, "User not found.");
-
-            var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
-
-            if (!result.Succeeded)
-                return (false, "Password reset failed.");
-
-            return (true, "Password reset successful.");
-        }
     }
 }

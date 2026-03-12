@@ -1,12 +1,10 @@
-﻿namespace KnowledgePlatformWebApiDB.Data.Entities;
+﻿using KnowledgePlatformWebApiDB.Data.Entities;
+using System.Collections.Generic;
 
 public class Permission
 {
-    public int Id { get; set; }
-
+    public int Id { get; set; }        
     public string Name { get; set; }
-
-    // Navigation Property
 
     public ICollection<RolePermission> RolePermissions { get; set; }
 }

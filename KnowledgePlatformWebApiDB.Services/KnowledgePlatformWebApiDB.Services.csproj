@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KnowledgePlatformWebApiDB.Data\KnowledgePlatformWebApiDB.Data.csproj" />
-    <ProjectReference Include="..\KnowledgePlatformWebApiDB.DtoModels\KnowledgePlatformWebApiDB.DtoModels.csproj" />
     <ProjectReference Include="..\KnowledgePlatformWebApiDB.Infrastructure\KnowledgePlatformWebApiDB.Infrastructure.csproj" />
   </ItemGroup>
 
