@@ -1,9 +1,4 @@
-﻿using DemoWebApiDB.Data.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace KnowledgePlatformWebApiDB.Data.Entities;
+﻿namespace KnowledgePlatformWebApiDB.Data.Entities;
 
 public class Permission
 {

@@ -1,5 +1,4 @@
-﻿using DemoWebApiDB.Data.Entities;
-using KnowledgePlatformWebApiDB.Data.Entities;
+﻿using KnowledgePlatformWebApiDB.Data.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
