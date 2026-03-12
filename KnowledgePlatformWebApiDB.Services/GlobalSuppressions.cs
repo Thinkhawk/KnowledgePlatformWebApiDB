@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace KnowledgePlatformWebApiDB.Infrastructure
+namespace KnowledgePlatformWebApiDB.Services
 {
     internal class GlobalSuppressions
     {

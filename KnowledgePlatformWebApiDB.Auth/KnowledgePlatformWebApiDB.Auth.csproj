@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\KnowledgePlatformWebApiDB.Data\KnowledgePlatformWebApiDB.Data.csproj" />
+    <ProjectReference Include="..\KnowledgePlatformWebApiDB.Services\KnowledgePlatformWebApiDB.Services.csproj" />
   </ItemGroup>
 
 </Project>
