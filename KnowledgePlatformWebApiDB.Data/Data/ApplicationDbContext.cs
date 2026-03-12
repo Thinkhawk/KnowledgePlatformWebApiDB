@@ -13,10 +13,10 @@ public class ApplicationDbContext
     public DbSet<Note> Notes { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
-    public DbSet<AuditEntry> AuditEntries { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<TeamAccess> TeamAccesses { get; set; }
+
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : base(options)
@@ -31,6 +31,7 @@ public class ApplicationDbContext
         modelBuilder.Entity<RolePermission>()
             .HasKey(rp => new { rp.RoleId, rp.PermissionId });
 
+
         // 2. Define Many-to-Many: Role <-> Permission
         modelBuilder.Entity<RolePermission>()
             .HasOne(rp => rp.Role)
@@ -44,12 +45,7 @@ public class ApplicationDbContext
             .HasForeignKey(rp => rp.PermissionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // 3. Define One-to-Many: User -> AuditEntries
-        modelBuilder.Entity<AuditEntry>()
-            .HasOne(a => a.User)
-            .WithMany(u => u.AuditEntries)
-            .HasForeignKey(a => a.UserId)
-            .OnDelete(DeleteBehavior.Restrict); // Keep audit logs even if user is deleted (standard practice)
+        
 
 
         modelBuilder.Entity<Project>()

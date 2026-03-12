@@ -1,18 +1,7 @@
-﻿namespace KnowledgePlatformWebApiDB.Data.Entities;
+﻿using Microsoft.AspNetCore.Identity;
 
-using Microsoft.AspNetCore.Identity;
-
-public class ApplicationUser : IdentityUser<int>
+public class ApplicationUser : IdentityUser<string>
 {
-    public string? FullName { get; set; }
-    public bool IsActive { get; set; }
+    public string FullName { get; set; } = string.Empty;
 
-    // Navigation
-
-    public ICollection<AuditEntry> AuditEntries { get; set; }
 }
-
-//ApplicationUser
-//   │
-//   ├── TeamAccess(Many)
-//   └── AuditEntries(Many)

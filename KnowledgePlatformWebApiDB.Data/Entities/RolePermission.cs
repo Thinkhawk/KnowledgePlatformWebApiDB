@@ -1,20 +1,8 @@
-﻿
-using KnowledgePlatformWebApiDB.Data.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace KnowledgePlatformWebApiDB.Data.Entities;
-
-public class RolePermission
+﻿public class RolePermission
 {
-    public int RoleId { get; set; }
-
-    public int PermissionId { get; set; }
-
-    // Navigation
-
+    public string RoleId { get; set; }      // string RoleId
     public ApplicationRole Role { get; set; }
 
+    public int PermissionId { get; set; }   // integer PermissionId
     public Permission Permission { get; set; }
 }

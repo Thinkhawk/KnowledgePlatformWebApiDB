@@ -1,20 +1,11 @@
-﻿namespace KnowledgePlatformWebApiDB.Data.Entities;
-
+﻿using KnowledgePlatformWebApiDB.Data.Entities;
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 
-public class ApplicationRole : IdentityRole<int>
+public class ApplicationRole : IdentityRole<string>
 {
-    // Navigation
+   
+    public string Description { get; set; }=string.Empty;
 
     public ICollection<RolePermission> RolePermissions { get; set; }
 }
-//ApplicationRole   Admin ,TeamLead ,User
-//   │
-//   ├── RolePermissions(Many)
-//   └── TeamAccess(Many)
-// already have the property like 
-
-// Id
-//Name    
-//NormalizedName 
-//ConcurrencyStamp    
