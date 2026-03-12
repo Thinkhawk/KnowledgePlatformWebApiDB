@@ -14,13 +14,14 @@ public class ApplicationDbContext
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<AuditEntry> AuditEntries { get; set; }
+    public DbSet<Project> Projects { get; set; }
+    public DbSet<Team> Teams { get; set; }
+    public DbSet<TeamAccess> TeamAccesses { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : base(options)
     {
     }
-
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,6 +51,7 @@ public class ApplicationDbContext
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Restrict); // Keep audit logs even if user is deleted (standard practice)
 
+
         modelBuilder.Entity<Project>()
             .ToTable(t => t.HasCheckConstraint(
                 name: "CK_Projects_Name_NotBlank",
@@ -59,6 +61,11 @@ public class ApplicationDbContext
             .ToTable(t => t.HasCheckConstraint(
                 name: "CK_Notes_Title_NotBlank",
                 sql: "LEN(LTRIM(RTRIM(title))) > 0"));
+        modelBuilder.Entity<Project>()
+                .ToTable(t => t.HasCheckConstraint(
+                    name: "CK_Projects_Name_NotBlank",
+                    sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
+
 
         modelBuilder.Entity<Note>()
             .ToTable(t => t.HasCheckConstraint(
