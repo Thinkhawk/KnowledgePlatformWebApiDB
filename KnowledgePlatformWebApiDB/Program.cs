@@ -3,6 +3,7 @@ using KnowledgePlatformWebApiDB.Data.Entities;
 using KnowledgePlatformWebApiDB.Auth.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using KnowledgePlatformWebApiDB.Services.Notes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
@@ -103,7 +104,15 @@ builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 
-var app = builder.Build();
+builder.Services.AddScoped<NoteService>();
+
+
+
+/***********************************************************************************/
+/************************************ BUILDING *************************************/
+/***********************************************************************************/
+
+
 
 // 6. SEEDING LOGIC (Runs on startup)
 using (var scope = app.Services.CreateScope())
@@ -123,13 +132,6 @@ using (var scope = app.Services.CreateScope())
         var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "An error occurred during database seeding.");
     }
-}
-
-// 7. MIDDLEWARE PIPELINE
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();

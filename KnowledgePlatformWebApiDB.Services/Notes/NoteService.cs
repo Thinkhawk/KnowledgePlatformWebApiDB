@@ -33,7 +33,8 @@ public sealed class NoteService
             });
         }
 
-        bool duplicateTitleExists = await _dbContext.Notes.AnyAsync(n => n.Title!.ToUpperInvariant() == createDto.Title.NormalizeKey());
+
+        bool duplicateTitleExists = await _dbContext.Notes.AnyAsync(n => n.Title!.ToUpper() == createDto.Title.NormalizeKey());
         if (duplicateTitleExists) {
             _logger.LogWarning("Note Creation Failed: Duplicate Title '{Title}' attempted.", title);
 
@@ -53,7 +54,7 @@ public sealed class NoteService
 
         _dbContext.Notes.Add(note);
 
-        await _dbContext.SaveChangesAsync();
+        //await _dbContext.SaveChangesAsync();
 
         var location = $"/api/{note.Team!.ProjectId}/{note.TeamId}/notes/{note.NoteId}";
 
@@ -88,23 +89,28 @@ public sealed class NoteService
         return Result<IReadOnlyList<NoteReadDto>>.Success(readDtos);
     }
 
-    public async Task<Result<IReadOnlyList<NoteReadDto>>> ReadWithFilterAsync(Guid? noteId = null, string? title = null, List<string>? tags = null, DateTime? createAtUtc=null, DateTime? updatedAtUtc=null)
+    public async Task<Result<IReadOnlyList<NoteReadDto>>> ReadWithFilterAsync(NoteFilterDto filterDto)
     {
         var query = _dbContext.Notes.AsNoTracking();
 
-        if (noteId.HasValue && noteId != Guid.Empty) {
-            query = query.Where(n => n.NoteId == noteId);
+        if (filterDto.NoteId.HasValue && filterDto.NoteId != Guid.Empty) {
+            query = query.Where(n => n.NoteId == filterDto.NoteId);
         }
-        if (title.NullIfWhiteSpace() is not null) {
-            query = query.Where(n => n.Title!.ToUpperInvariant() == title!.NormalizeKey());
+        if (filterDto.Title.NullIfWhiteSpace() is not null) {
+            query = query.Where(n => n.Title!.ToUpper() == filterDto.Title!.NormalizeKey());
         }
-        if (createAtUtc.HasValue) {
-            query = query.Where(n => n.CreatedAtUtc == createAtUtc);
+        if (filterDto.UserId.NullIfWhiteSpace() is not null) {
+            query = query.Where(n => n.UserId!.ToUpper() == filterDto.UserId!.NormalizeKey());
         }
-        if (updatedAtUtc.HasValue)
+        if (filterDto.CreatedAtUtc.HasValue) {
+            query = query.Where(n => n.CreatedAtUtc == filterDto.CreatedAtUtc);
+        }
+        if (filterDto.UpdatedAtUtc.HasValue)
         {
-            query = query.Where(n => n.UpdatedAtUtc == updatedAtUtc);
+            query = query.Where(n => n.UpdatedAtUtc == filterDto.UpdatedAtUtc);
         }
+
+        var tags = filterDto.Tags;
         if (!tags.IsNullOrEmpty()) {
             foreach (var tag in tags!) {
                 query = query.Where(n => n.Tags.Contains(tag));
@@ -178,7 +184,7 @@ public sealed class NoteService
             });
         }
 
-        bool duplicateTitleExists = await _dbContext.Notes.AnyAsync(n => n.Title!.ToUpperInvariant() == title.NormalizeKey() && n.NoteId != routeNoteId);
+        bool duplicateTitleExists = await _dbContext.Notes.AnyAsync(n => n.Title!.ToUpper() == title.NormalizeKey() && n.NoteId != routeNoteId);
         if (duplicateTitleExists)
         {
             _logger.LogWarning("Note Creation Failed: Duplicate Title '{Title}' attempted.", title);
