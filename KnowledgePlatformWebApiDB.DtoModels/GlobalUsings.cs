@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace KnowledgePlatformWebApiDB.Data
+namespace KnowledgePlatformWebApiDB.DtoModels
 {
-    internal class GlobalUsings
+    public class GlobalUsings
     {
     }
 }

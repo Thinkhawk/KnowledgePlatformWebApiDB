@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace KnowledgePlatformWebApiDB.Data
+namespace KnowledgePlatformWebApiDB.Services
 {
     internal class GlobalUsings
     {

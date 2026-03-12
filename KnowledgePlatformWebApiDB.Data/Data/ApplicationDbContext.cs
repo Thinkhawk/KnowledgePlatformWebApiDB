@@ -50,6 +50,11 @@ public class ApplicationDbContext
             .HasForeignKey(a => a.UserId)
             .OnDelete(DeleteBehavior.Restrict); // Keep audit logs even if user is deleted (standard practice)
 
+        modelBuilder.Entity<Project>()
+            .ToTable(t => t.HasCheckConstraint(
+                name: "CK_Projects_Name_NotBlank",
+                sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
+
         modelBuilder.Entity<Note>()
             .ToTable(t => t.HasCheckConstraint(
                 name: "CK_Notes_Title_NotBlank",
@@ -71,6 +76,14 @@ public class ApplicationDbContext
                 v => string.Join(',', v),
                 v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList())
             .Metadata.SetValueComparer(valueComparer);
+
+        modelBuilder.Entity<Project>()
+            .Property(e => e.RowVersion)
+            .IsRowVersion();
+
+        modelBuilder.Entity<Team>()
+            .Property(e => e.RowVersion)
+            .IsRowVersion();
     }
 
     public override int SaveChanges()
