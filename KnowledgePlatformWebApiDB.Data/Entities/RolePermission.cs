@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DemoWebApiDB.Data.Entities;
+namespace KnowledgePlatformWebApiDB.Data.Entities;
 
 public class RolePermission
 {

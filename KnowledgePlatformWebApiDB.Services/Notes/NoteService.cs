@@ -21,11 +21,13 @@ public sealed class NoteService
         _logger = logger;
     }
 
-    public async Task<Result<string>> CreateAsync(NoteCreateDto createDto) {
+    public async Task<Result<string>> CreateAsync(NoteCreateDto createDto)
+    {
 
         var title = createDto.Title.TrimOrEmpty();
-        
-        if (!title.HasValue()) {
+
+        if (!title.HasValue())
+        {
             _logger.LogWarning("Note Creation Failed: Title is empty.");
 
             return Result<string>.ValidationFailure(new[] {
@@ -35,7 +37,8 @@ public sealed class NoteService
 
 
         bool duplicateTitleExists = await _dbContext.Notes.AnyAsync(n => n.Title!.ToUpper() == createDto.Title.NormalizeKey());
-        if (duplicateTitleExists) {
+        if (duplicateTitleExists)
+        {
             _logger.LogWarning("Note Creation Failed: Duplicate Title '{Title}' attempted.", title);
 
             return Result<string>.ValidationFailure(new[] {
@@ -69,7 +72,7 @@ public sealed class NoteService
             .AsNoTracking()
             .OrderBy(n => n.UpdatedAtUtc)
             .ToListAsync();
-        
+
 
         var readDtos = notes.Select(note => new NoteReadDto(
                 NoteId: note.NoteId,
@@ -93,16 +96,20 @@ public sealed class NoteService
     {
         var query = _dbContext.Notes.AsNoTracking();
 
-        if (filterDto.NoteId.HasValue && filterDto.NoteId != Guid.Empty) {
+        if (filterDto.NoteId.HasValue && filterDto.NoteId != Guid.Empty)
+        {
             query = query.Where(n => n.NoteId == filterDto.NoteId);
         }
-        if (filterDto.Title.NullIfWhiteSpace() is not null) {
+        if (filterDto.Title.NullIfWhiteSpace() is not null)
+        {
             query = query.Where(n => n.Title!.ToUpper() == filterDto.Title!.NormalizeKey());
         }
-        if (filterDto.UserId.NullIfWhiteSpace() is not null) {
+        if (filterDto.UserId.NullIfWhiteSpace() is not null)
+        {
             query = query.Where(n => n.UserId!.ToUpper() == filterDto.UserId!.NormalizeKey());
         }
-        if (filterDto.CreatedAtUtc.HasValue) {
+        if (filterDto.CreatedAtUtc.HasValue)
+        {
             query = query.Where(n => n.CreatedAtUtc == filterDto.CreatedAtUtc);
         }
         if (filterDto.UpdatedAtUtc.HasValue)
@@ -111,8 +118,10 @@ public sealed class NoteService
         }
 
         var tags = filterDto.Tags;
-        if (!tags.IsNullOrEmpty()) {
-            foreach (var tag in tags!) {
+        if (!tags.IsNullOrEmpty())
+        {
+            foreach (var tag in tags!)
+            {
                 query = query.Where(n => n.Tags.Contains(tag));
             }
         }
@@ -145,7 +154,8 @@ public sealed class NoteService
 
     public async Task<Result> UpdateAsync(Guid routeNoteId, NoteUpdateDto updateDto)
     {
-        if (routeNoteId != updateDto.NoteId) {
+        if (routeNoteId != updateDto.NoteId)
+        {
             _logger.LogWarning("Note update failed: NoteId in route {RouteNoteId} doesn't match the NoteId in payload {PayloadNoteId}.", routeNoteId, updateDto.NoteId);
             return Result.ValidationFailure(new[] {
                 new ValidationErrorModel(nameof(updateDto.NoteId), $"Route NoteId {routeNoteId} and payload NoteId {updateDto.NoteId} must match.")
@@ -165,7 +175,8 @@ public sealed class NoteService
         {
             incomingRowVersion = RowVersionHelper.FromBase64(updateDto.RowVersion);
         }
-        catch (ArgumentException e) {
+        catch (ArgumentException)
+        {
             _logger.LogWarning("Note update failed due to invalid RowVersion format. NoteId: {NoteId}", routeNoteId);
             return Result.ValidationFailure(new[] {
                 new ValidationErrorModel(nameof(updateDto.RowVersion),"Invalid RowVersion format.")
@@ -177,7 +188,8 @@ public sealed class NoteService
             .OriginalValue = incomingRowVersion;
 
         var title = updateDto.Title.NullIfWhiteSpace();
-        if (title is null) {
+        if (title is null)
+        {
             _logger.LogWarning("Note update failed: Empty title provided. NotedId: {NoteId}", routeNoteId);
             return Result.ValidationFailure(new[] {
                 new ValidationErrorModel(nameof(updateDto.Title),"Title cannot be empty or blank.")
@@ -202,7 +214,8 @@ public sealed class NoteService
         {
             await _dbContext.SaveChangesAsync();
         }
-        catch (Exception e) {
+        catch (Exception)
+        {
             _logger.LogWarning("Note update concurrency conflict. NoteId: {NoteId}", routeNoteId);
             return Result.Concurrency($"The note with is {routeNoteId} was updated bu another user. Please reload and try again.");
         }
@@ -234,7 +247,7 @@ public sealed class NoteService
         {
             incomingRowVersion = RowVersionHelper.FromBase64(deleteDto.RowVersion);
         }
-        catch (ArgumentException e)
+        catch (ArgumentException)
         {
             _logger.LogWarning("Note delete failed due to invalid RowVersion format. NoteId: {NoteId}", routeNoteId);
             return Result.ValidationFailure(new[] {
@@ -252,7 +265,7 @@ public sealed class NoteService
         {
             await _dbContext.SaveChangesAsync();
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _logger.LogWarning("Note delete concurrency conflict. NoteId: {NoteId}", routeNoteId);
             return Result.Concurrency($"The note with is {routeNoteId} was updated but another user. Please reload and try again.");

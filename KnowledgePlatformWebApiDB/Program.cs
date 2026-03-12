@@ -112,6 +112,7 @@ builder.Services.AddScoped<NoteService>();
 /************************************ BUILDING *************************************/
 /***********************************************************************************/
 
+var app = builder.Build();
 
 
 // 6. SEEDING LOGIC (Runs on startup)

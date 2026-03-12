@@ -14,7 +14,7 @@ public sealed class Note
 
     [Display(Name = "Tile of the Note")]
     [Required(ErrorMessage = "{0} cannot be empty.")]
-    [StringLength(maximumLength: 100, MinimumLength = 3, ErrorMessage = "{0} should have characteres b/w {1} and {2} characters")]
+    [StringLength(maximumLength: 100, MinimumLength = 3, ErrorMessage = "{0} should have characters b/w {1} and {2} characters")]
     public string? Title { get; set; }
 
 
