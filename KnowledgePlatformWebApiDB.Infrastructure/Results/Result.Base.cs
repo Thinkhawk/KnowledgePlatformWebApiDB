@@ -11,6 +11,6 @@ public class ResultBase
     { 
         Status = status;
         Errors = errors?.ToList() ?? new List<ErrorModel>();
-        ValidationErrors = validationErrors.ToList() ?? new List<ValidationErrorModel>();
+        ValidationErrors = validationErrors?.ToList() ?? new List<ValidationErrorModel>();
     }
 }
