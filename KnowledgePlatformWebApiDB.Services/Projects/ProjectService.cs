@@ -29,7 +29,7 @@ public sealed class ProjectService
     // ------------------------------------------------------------
     // CREATE PROJECT
     // ------------------------------------------------------------
-    public async Task<Result<string>> CreateAsync(DtoModels.Projects.ProjectCreateDto dto)
+    public async Task<Result<string>> CreateAsync(ProjectCreateDto dto)
     {
         // Trim whitespace from project name
         var name = dto.Name?.Trim();
