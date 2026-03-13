@@ -62,7 +62,7 @@ public class ApplicationDbContext
             entity.HasOne(p => p.User)
             .WithMany(u => u.Projects)
             .HasForeignKey(p => p.CreatorId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(p => p.Name)
             .IsUnique()
@@ -77,10 +77,15 @@ public class ApplicationDbContext
 
         modelBuilder.Entity<Team>(entity => {
 
-            entity.HasOne(tm => tm.User)
-            .WithMany()
-            .HasForeignKey(tm => tm.CreatorId)
+            entity.HasOne(tm => tm.Project)
+            .WithMany(p => p.Teams)
+            .HasForeignKey(tm => tm.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(tm => tm.User)
+            .WithMany(u => u.Teams)
+            .HasForeignKey(tm => tm.CreatorId)
+            .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(tm => new { tm.Name, tm.ProjectId})
             .IsUnique()
@@ -101,6 +106,11 @@ public class ApplicationDbContext
             entity.ToTable(t => t.HasCheckConstraint(
                 name: "CK_TeamAccesses_AccessLevel",
                 sql: "[AccessLevel] IN ('Read', 'Write')"));
+
+            entity.HasOne(ta => ta.Team)
+            .WithMany(t => t.TeamAccesses)
+            .HasForeignKey(ta => ta.TeamId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         });
 
@@ -129,7 +139,17 @@ public class ApplicationDbContext
 
             entity.HasIndex(n => new { n.Title, n.TeamId })
             .IsUnique()
-            .HasDatabaseName("UQ_ProjectTeams_Name");
+            .HasDatabaseName("UQ_TeamNotes_Title");
+
+            entity.HasOne(n => n.Team)
+            .WithMany(t => t.Note)
+            .HasForeignKey(n => n.TeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(n => n.User)
+            .WithMany(u => u.Notes)
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
 
             entity.Property(n => n.RowVersion)
             .IsRowVersion();

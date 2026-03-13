@@ -8,9 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
 using Scalar.AspNetCore;
-
 using System.Text;
 using KnowledgePlatformWebApiDB.Services.Projects;
 using KnowledgePlatformWebApiDB.Services.Teams;
@@ -19,85 +17,58 @@ using KnowledgePlatformWebApiDB.Services.UserAccess;
 
 var builder = WebApplication.CreateBuilder(args);
 
-/***********************************************************************************/
-/******************************** DATABASE CONFIG **********************************/
-/***********************************************************************************/
-
+// 1. DATABASE CONFIGURATION
 if (!builder.Environment.IsEnvironment("Testing"))
 {
     const string CONNECTION_STRING_NAME = "DefaultConnectionString";
     const string MIGRATION_ASSEMBLY_NAME = "KnowledgePlatformWebApiDB";
 
     string connectionString = builder.Configuration.GetConnectionString(CONNECTION_STRING_NAME)
-        ?? throw new InvalidOperationException(
-            $"Connection string {CONNECTION_STRING_NAME} is not specified in appsettings.json");
+        ?? throw new InvalidOperationException($"Connection string {CONNECTION_STRING_NAME} is not specified in the appsettings.json");
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         options.UseSqlServer(
             connectionString,
-            builderOptions => builderOptions.MigrationsAssembly(MIGRATION_ASSEMBLY_NAME));
+            builderOptions => builderOptions.MigrationsAssembly(MIGRATION_ASSEMBLY_NAME)
+        );
     });
 }
 
-
-/***********************************************************************************/
-/******************************** IDENTITY CONFIG **********************************/
-/***********************************************************************************/
-
-builder.Services
-    .AddIdentity<ApplicationUser, ApplicationRole>()
+// 2. IDENTITY CONFIGURATION
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-
-/***********************************************************************************/
-/******************************** AUTH SERVICES ************************************/
-/***********************************************************************************/
-
+// 3. REGISTER AUTH SERVICES
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<TokenService>();
 
-
-/***********************************************************************************/
-/******************************** JWT CONFIGURATION ********************************/
-/***********************************************************************************/
-
+// 4. JWT AUTHENTICATION CONFIGURATION
 var jwtSection = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSection["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is missing.");
 
-var secretKey = jwtSection["SecretKey"]
-    ?? throw new InvalidOperationException("JWT SecretKey is missing.");
-
-builder.Services
-    .AddAuthentication(options =>
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSection["Issuer"],
+        ValidAudience = jwtSection["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
 
-            ValidIssuer = jwtSection["Issuer"],
-            ValidAudience = jwtSection["Audience"],
-
-            IssuerSigningKey =
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-
-
-/***********************************************************************************/
-/******************************** CONTROLLERS **************************************/
-/***********************************************************************************/
-
+// 5. CONTROLLERS & API BEHAVIOR
 builder.Services
     .AddControllers(options =>
     {
@@ -124,7 +95,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
         {
             Status = StatusCodes.Status400BadRequest,
             Title = "Validation Failed",
-            Detail = "One or more validation errors occurred.",
+            Detail = "One or more validation errors have occurred.",
             Instance = context.HttpContext.Request.Path
         };
 
@@ -132,41 +103,33 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
-
-/***********************************************************************************/
-/******************************** AUTHORIZATION ************************************/
-/***********************************************************************************/
-
 builder.Services.AddAuthorization();
 
-
-/***********************************************************************************/
-/******************************** OPENAPI + SCALAR *********************************/
-/***********************************************************************************/
-
 builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
 
-
-/***********************************************************************************/
-/******************************** OTHER SERVICES ***********************************/
-/***********************************************************************************/
-
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<TeamService>();
+builder.Services.AddScoped<TeamAccessService>();
 builder.Services.AddScoped<NoteService>();
 builder.Services.AddScoped<UserAccessService>();
 
 
 
-
-/******************************** BUILD APP ****************************************/
+/***********************************************************************************/
 /************************************ BUILDING *************************************/
 /***********************************************************************************/
 
 var app = builder.Build();
-if (builder.Environment.IsDevelopment()) {
+
+if (builder.Environment.IsDevelopment())
+{
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-/***********************************************************************************/
+
 // 6. SEEDING LOGIC (Runs on startup)
 using (var scope = app.Services.CreateScope())
 {
@@ -187,21 +150,14 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-
-
 app.UseHttpsRedirection();
 
-// Authentication must come before Authorization
+app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
-
-
 app.MapControllers();
-app.MapOpenApi();             // OpenAPI specification
-app.MapScalarApiReference();  // Scalar API UI
-
-
 
 app.Run();
