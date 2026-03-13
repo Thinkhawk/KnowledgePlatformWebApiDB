@@ -11,6 +11,7 @@ namespace KnowledgePlatformWebApiDB.Data.Data
             RoleManager<ApplicationRole> roleManager,
             UserManager<ApplicationUser> userManager)
         {
+            // Apply migrations
             await context.Database.MigrateAsync();
 
             await SeedPermissions(context);
@@ -19,6 +20,9 @@ namespace KnowledgePlatformWebApiDB.Data.Data
             await SeedUsers(userManager);
         }
 
+        // --------------------------------------------------
+        // PERMISSIONS
+        // --------------------------------------------------
         private static async Task SeedPermissions(ApplicationDbContext context)
         {
             if (await context.Permissions.AnyAsync())
@@ -40,6 +44,9 @@ namespace KnowledgePlatformWebApiDB.Data.Data
             await context.SaveChangesAsync();
         }
 
+        // --------------------------------------------------
+        // ROLES
+        // --------------------------------------------------
         private static async Task SeedRoles(RoleManager<ApplicationRole> roleManager)
         {
             string[] roles = { "ProjectAdmin", "ProjectLead", "TeamMember" };
@@ -48,14 +55,25 @@ namespace KnowledgePlatformWebApiDB.Data.Data
             {
                 if (!await roleManager.RoleExistsAsync(role))
                 {
-                    await roleManager.CreateAsync(new ApplicationRole
+                    var result = await roleManager.CreateAsync(new ApplicationRole
                     {
                         Name = role
                     });
+
+                    if (!result.Succeeded)
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            Console.WriteLine($"Role Seeder Error: {error.Description}");
+                        }
+                    }
                 }
             }
         }
 
+        // --------------------------------------------------
+        // ROLE PERMISSIONS
+        // --------------------------------------------------
         private static async Task SeedRolePermissions(ApplicationDbContext context)
         {
             if (await context.RolePermissions.AnyAsync())
@@ -63,9 +81,12 @@ namespace KnowledgePlatformWebApiDB.Data.Data
 
             var permissions = await context.Permissions.ToListAsync();
 
-            var adminRole = await context.Roles.FirstAsync(r => r.Name == "ProjectAdmin");
-            var leadRole = await context.Roles.FirstAsync(r => r.Name == "ProjectLead");
-            var memberRole = await context.Roles.FirstAsync(r => r.Name == "TeamMember");
+            var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "ProjectAdmin");
+            var leadRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "ProjectLead");
+            var memberRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "TeamMember");
+
+            if (adminRole == null || leadRole == null || memberRole == null)
+                return;
 
             var rolePermissions = new List<RolePermission>();
 
@@ -87,9 +108,9 @@ namespace KnowledgePlatformWebApiDB.Data.Data
                 "ReadNote","WriteNote"
             };
 
-           rolePermissions.AddRange(CreateRolePermissions(adminRole.Id, permissions, adminPermissions));
-           rolePermissions.AddRange(CreateRolePermissions(leadRole.Id, permissions, leadPermissions));
-           rolePermissions.AddRange(CreateRolePermissions(memberRole.Id, permissions, memberPermissions));
+            rolePermissions.AddRange(CreateRolePermissions(adminRole.Id, permissions, adminPermissions));
+            rolePermissions.AddRange(CreateRolePermissions(leadRole.Id, permissions, leadPermissions));
+            rolePermissions.AddRange(CreateRolePermissions(memberRole.Id, permissions, memberPermissions));
 
             await context.RolePermissions.AddRangeAsync(rolePermissions);
             await context.SaveChangesAsync();
@@ -109,6 +130,9 @@ namespace KnowledgePlatformWebApiDB.Data.Data
                 });
         }
 
+        // --------------------------------------------------
+        // USERS
+        // --------------------------------------------------
         private static async Task SeedUsers(UserManager<ApplicationUser> userManager)
         {
             var adminUser = await userManager.FindByNameAsync("admin");
@@ -125,10 +149,16 @@ namespace KnowledgePlatformWebApiDB.Data.Data
 
             var result = await userManager.CreateAsync(user, "Password@123");
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                await userManager.AddToRoleAsync(user, "ProjectAdmin");
+                foreach (var error in result.Errors)
+                {
+                    Console.WriteLine($"User Seeder Error: {error.Description}");
+                }
+                return;
             }
+
+            await userManager.AddToRoleAsync(user, "ProjectAdmin");
         }
     }
 }

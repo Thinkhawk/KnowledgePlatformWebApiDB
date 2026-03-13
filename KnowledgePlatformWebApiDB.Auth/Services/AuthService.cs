@@ -42,6 +42,41 @@ namespace KnowledgePlatformWebApiDB.Auth.Services
         }
 
 
+        //Create User Method
+        public async Task<(bool Success, string Message)> CreateUserAsync(CreateUserDto dto)
+        {
+            var userExists = await _userManager.FindByNameAsync(dto.Username);
+
+            if (userExists != null)
+                return (false, "User already exists");
+
+            var user = new ApplicationUser
+            {
+                UserName = dto.Username,
+                Email = dto.Email,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(user, dto.Password);
+
+            if (!result.Succeeded)
+            {
+                string msg = "";
+                foreach(var item in result.Errors)
+                {
+                    msg += item.Description+" ";
+                }
+                
+                return (false, msg);
+            }
+                
+
+            await _userManager.AddToRoleAsync(user, dto.Role);
+
+            return (true, "User created successfully");
+        }
+
+
 
     }
 }

@@ -46,7 +46,6 @@ builder.Services.AddScoped<TokenService>();
 
 // 4. JWT AUTHENTICATION CONFIGURATION
 var jwtSection = builder.Configuration.GetSection("Jwt");
-var secretKey = jwtSection["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey is missing.");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -129,7 +128,6 @@ if (builder.Environment.IsDevelopment()) {
     app.MapScalarApiReference();
 }
 
-// 6. SEEDING LOGIC (Runs on startup)
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -151,8 +149,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
-app.UseRouting();
-
+// Authentication must come before Authorization
 app.UseAuthentication();
 
 app.UseAuthorization();
