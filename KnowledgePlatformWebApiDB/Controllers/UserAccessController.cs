@@ -1,4 +1,5 @@
 ﻿using KnowledgePlatformWebApiDB.Services.UserAccess;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
@@ -19,6 +20,7 @@ public sealed class UserAccessController : BaseApiController
     /// </summary>
     /// <param name="userId">The ID of the user.</param>
     /// <returns>A hierarchical list of projects and their accessible teams.</returns>
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet("{userId}")]
     public async Task<IActionResult> GetUserAccess(string userId)
     {

@@ -1,6 +1,7 @@
 ﻿using KnowledgePlatformWebApiDB.Data.Entities;
 using KnowledgePlatformWebApiDB.DtoModels.Notes;
 using KnowledgePlatformWebApiDB.Services.Notes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
@@ -17,7 +18,7 @@ public sealed class NotesController : BaseApiController
     }
 
 
-
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpPost]
     public async Task<IActionResult> CreateNote([FromBody] NoteCreateDto NotecreateDto)
     {
@@ -26,6 +27,7 @@ public sealed class NotesController : BaseApiController
     }
 
 
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet]
     public async Task<IActionResult> ReadAllNotes()
     {
@@ -34,6 +36,7 @@ public sealed class NotesController : BaseApiController
     }
 
 
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet("filter")]
     public async Task<IActionResult> ReadNotesWithFilter([FromQuery] NoteFilterDto filterDto)
     {
@@ -42,6 +45,7 @@ public sealed class NotesController : BaseApiController
     }
 
 
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpPut("{noteId:guid}")]
     public async Task<IActionResult> UpdateNote(Guid noteId, NoteUpdateDto updateDto)
     {
@@ -50,6 +54,7 @@ public sealed class NotesController : BaseApiController
     }
 
 
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpDelete]
     public async Task<IActionResult> DeleteNote(Guid noteId, NoteDeleteDto deleteDto)
     {

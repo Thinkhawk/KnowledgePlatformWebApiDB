@@ -1,6 +1,7 @@
 ﻿using KnowledgePlatformWebApiDB.DtoModels.TeamAccessDtos;
 using KnowledgePlatformWebApiDB.DtoModels.TeamAccesses;
 using KnowledgePlatformWebApiDB.Services.TeamAccesses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
@@ -16,6 +17,7 @@ public sealed class TeamAccessController : BaseApiController
     }
 
     // CREATE Team Access
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpPost]
     public async Task<IActionResult> CreateTeamAccess([FromBody] TeamAccessCreateDto createDto)
     {
@@ -24,6 +26,7 @@ public sealed class TeamAccessController : BaseApiController
     }
 
     // GET ALL Team Access records
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpGet]
     public async Task<IActionResult> ReadAllTeamAccess()
     {
@@ -32,6 +35,7 @@ public sealed class TeamAccessController : BaseApiController
     }
 
     // GET ONE Team Access
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpGet("{accessId:int}")]
     public async Task<IActionResult> ReadOneTeamAccess(int accessId)
     {
@@ -40,6 +44,7 @@ public sealed class TeamAccessController : BaseApiController
     }
 
     // UPDATE Team Access
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpPut("{accessId:int}")]
     public async Task<IActionResult> UpdateTeamAccess(int accessId, [FromBody] TeamAccessUpdateDto updateDto)
     {
@@ -48,6 +53,7 @@ public sealed class TeamAccessController : BaseApiController
     }
 
     // DELETE Team Access
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpDelete("{accessId:int}")]
     public async Task<IActionResult> DeleteTeamAccess(int accessId, [FromBody] TeamAccessDeleteDto deleteDto)
     {

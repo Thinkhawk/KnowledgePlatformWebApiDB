@@ -1,5 +1,6 @@
 ﻿using KnowledgePlatformWebApiDB.DtoModels.Projects;
 using KnowledgePlatformWebApiDB.Services.Projects;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
@@ -15,6 +16,7 @@ public sealed class ProjectsController : BaseApiController
     }
 
     // CREATE PROJECT
+    [Authorize(Roles = "ProjectAdmin")]
     [HttpPost]
     public async Task<IActionResult> CreateProject([FromBody] ProjectCreateDto createDto)
     {
@@ -23,6 +25,7 @@ public sealed class ProjectsController : BaseApiController
     }
 
     // GET ALL PROJECTS
+    [Authorize(Roles = "ProjectAdmin")]
     [HttpGet]
     public async Task<IActionResult> ReadAllProjects()
     {
@@ -31,6 +34,7 @@ public sealed class ProjectsController : BaseApiController
     }
 
     // GET ONE PROJECT
+    [Authorize(Roles = "ProjectAdmin")]
     [HttpGet("{projectId:int}")]
     public async Task<IActionResult> ReadOneProject(int projectId)
     {
@@ -39,6 +43,7 @@ public sealed class ProjectsController : BaseApiController
     }
 
     // UPDATE PROJECT
+    [Authorize(Roles = "ProjectAdmin")]
     [HttpPut("{projectId:int}")]
     public async Task<IActionResult> UpdateProject(int projectId, [FromBody] ProjectUpdateDto updateDto)
     {
@@ -47,6 +52,7 @@ public sealed class ProjectsController : BaseApiController
     }
 
     // DELETE PROJECT
+    [Authorize(Roles = "ProjectAdmin")]
     [HttpDelete("{projectId:int}")]
     public async Task<IActionResult> DeleteProject(int projectId, [FromBody] ProjectDeleteDto deleteDto)
     {

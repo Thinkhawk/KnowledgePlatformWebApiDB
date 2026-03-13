@@ -52,7 +52,8 @@ public sealed class TeamService
         var entity = new Team
         {
             Name = cleanedName,
-            ProjectId = dto.ProjectId
+            ProjectId = dto.ProjectId,
+            CreatorId= dto.CreatorId
         };
 
         _dbContext.Teams.Add(entity);

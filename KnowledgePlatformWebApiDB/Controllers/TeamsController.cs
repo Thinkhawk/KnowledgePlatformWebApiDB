@@ -1,5 +1,6 @@
 ﻿using KnowledgePlatformWebApiDB.DtoModels.Teams;
 using KnowledgePlatformWebApiDB.Services.Teams;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
@@ -15,6 +16,7 @@ public sealed class TeamsController : BaseApiController
     }
 
     // CREATE TEAM
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpPost]
     public async Task<IActionResult> CreateTeam([FromBody] TeamCreateDto createDto)
     {
@@ -23,6 +25,7 @@ public sealed class TeamsController : BaseApiController
     }
 
     // GET ALL TEAMS
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpGet]
     public async Task<IActionResult> ReadAllTeams()
     {
@@ -31,6 +34,7 @@ public sealed class TeamsController : BaseApiController
     }
 
     // GET ONE TEAM
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpGet("{teamId:int}")]
     public async Task<IActionResult> ReadOneTeam(int teamId)
     {
@@ -39,6 +43,7 @@ public sealed class TeamsController : BaseApiController
     }
 
     // UPDATE TEAM
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpPut("{teamId:int}")]
     public async Task<IActionResult> UpdateTeam(int teamId, [FromBody] TeamUpdateDto updateDto)
     {
@@ -47,6 +52,7 @@ public sealed class TeamsController : BaseApiController
     }
 
     // DELETE TEAM
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpDelete("{teamId:int}")]
     public async Task<IActionResult> DeleteTeam(int teamId, [FromBody] TeamDeleteDto deleteDto)
     {
