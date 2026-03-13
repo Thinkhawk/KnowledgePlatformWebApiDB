@@ -19,7 +19,7 @@ public sealed class NotesController : BaseApiController
 
 
     [HttpPost]
-    public async Task<IActionResult> CreateNote([FromBody] NoteCreateDto createDto)
+    public async Task<IActionResult> CreateNote([FromBody] ProjectCreateDto createDto)
     {
         var result = await _noteService.CreateAsync(createDto);
         return HandleResult(result);
