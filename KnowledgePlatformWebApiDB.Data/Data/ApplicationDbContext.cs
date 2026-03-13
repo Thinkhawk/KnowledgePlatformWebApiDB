@@ -98,6 +98,10 @@ public class ApplicationDbContext
             entity.Property(ta => ta.AccessLevel)
             .HasConversion<string>();
 
+            entity.ToTable(t => t.HasCheckConstraint(
+                name: "CK_TeamAccesses_AccessLevel",
+                sql: "[AccessLevel] IN ('Read', 'Write')"));
+
         });
 
         // --- Note Constraints
