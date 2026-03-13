@@ -20,16 +20,12 @@ public sealed class Project : AuditableEntity
     [MaxLength(500)]
     public string? Description { get; set; }
 
-    [Required]
-    public string CreatedById { get; set; } = string.Empty;
-
     // -------- Relationship with ApplicationUser
 
     [Required]
-    public string UserId { get; set; } = default!;
+    public string CreatorId { get; set; } = string.Empty;
 
-
-    [ForeignKey(nameof(UserId))]
+    [ForeignKey(nameof(CreatorId))]
     public ApplicationUser User { get; set; } = null!;
 
 

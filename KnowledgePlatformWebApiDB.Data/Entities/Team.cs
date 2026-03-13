@@ -31,9 +31,9 @@ public sealed class Team : AuditableEntity
     // -------- Relationship with ApplicationUser
 
     [Required]
-    public string UserId { get; set; } = default!;
+    public string CreatorId { get; set; } = default!;
 
-    [ForeignKey(nameof(UserId))]
+    [ForeignKey(nameof(CreatorId))]
     public ApplicationUser User { get; set; } = null!;
 
 

@@ -61,7 +61,7 @@ public class ApplicationDbContext
 
             entity.HasOne(p => p.User)
             .WithMany(u => u.Projects)
-            .HasForeignKey(p => p.UserId)
+            .HasForeignKey(p => p.CreatorId)
             .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(p => p.Name)
@@ -77,9 +77,9 @@ public class ApplicationDbContext
 
         modelBuilder.Entity<Team>(entity => {
 
-            entity.HasOne(tm => tm.UserId)
+            entity.HasOne(tm => tm.User)
             .WithMany()
-            .HasForeignKey(tm => tm.UserId)
+            .HasForeignKey(tm => tm.CreatorId)
             .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(tm => new { tm.Name, tm.ProjectId})

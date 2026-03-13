@@ -3,14 +3,10 @@
 public sealed record class TeamReadDto
 (
     int TeamId,
-
     int ProjectId,
-
     string Name,
-
+    string CreatorId,
     DateTime CreatedAtUtc,
-
-    DateTime? ModifiedAtUtc,
-
+    DateTime? UpdatedAtUtc,
     string RowVersion
 );

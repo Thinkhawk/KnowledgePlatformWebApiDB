@@ -2,6 +2,7 @@
 using KnowledgePlatformWebApiDB.Data.Entities;
 using KnowledgePlatformWebApiDB.DtoModels.TeamAccessDtos;
 using KnowledgePlatformWebApiDB.DtoModels.TeamAccesses;
+using KnowledgePlatformWebApiDB.Infrastructure.Helpers;
 using KnowledgePlatformWebApiDB.Infrastructure.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -100,7 +101,9 @@ public sealed class TeamAccessService
             TeamId: entity.TeamId,
             UserId: entity.UserId,
             AccessLevel: entity.AccessLevel,
-            CreatedAtUtc: entity.CreatedAtUtc
+            CreatedAtUtc: entity.CreatedAtUtc,
+            UpdatedAtUtc: entity.UpdatedAtUtc,
+            RowVersion: RowVersionHelper.ToBase64(entity.RowVersion)
         );
 
         return Result<TeamAccessReadDto>.Success(dto);
@@ -123,7 +126,9 @@ public sealed class TeamAccessService
                 e.TeamId,
                 e.UserId,
                 e.AccessLevel,
-                e.CreatedAtUtc
+                e.CreatedAtUtc,
+                e.UpdatedAtUtc,
+                RowVersion: RowVersionHelper.ToBase64(e.RowVersion)
             ))
             .ToList()
             .AsReadOnly();

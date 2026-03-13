@@ -9,5 +9,8 @@ public sealed record class TeamAccessUpdateDto
     int AccessId,
 
     [Required]
-    Level AccessLevel
+    Level AccessLevel,
+
+    [Required]
+    string RowVersion
 );
