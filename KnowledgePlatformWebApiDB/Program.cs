@@ -10,6 +10,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using KnowledgePlatformWebApiDB.Services.Projects;
+using KnowledgePlatformWebApiDB.Services.Teams;
+using KnowledgePlatformWebApiDB.Services.TeamAccesses;
+using KnowledgePlatformWebApiDB.Services.UserAccess;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -104,7 +108,13 @@ builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<ProjectService>();
+builder.Services.AddScoped<TeamService>();
+builder.Services.AddScoped<TeamAccessService>();
 builder.Services.AddScoped<NoteService>();
+builder.Services.AddScoped<UserAccessService>();
 
 
 
@@ -141,8 +151,10 @@ using (var scope = app.Services.CreateScope())
 
 app.UseHttpsRedirection();
 
-// Authentication must come before Authorization
+app.UseRouting();
+
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();
