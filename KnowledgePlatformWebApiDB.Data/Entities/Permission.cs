@@ -1,10 +1,9 @@
-﻿using KnowledgePlatformWebApiDB.Data.Entities;
-using System.Collections.Generic;
+﻿namespace KnowledgePlatformWebApiDB.Data.Entities;
 
 public class Permission
 {
-    public int Id { get; set; }        
-    public string Name { get; set; }
+    public int Id { get; set; }
+    public string? Name { get; set; }
 
-    public ICollection<RolePermission> RolePermissions { get; set; }
+    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 }

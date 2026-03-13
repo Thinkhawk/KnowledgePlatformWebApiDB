@@ -14,5 +14,8 @@ public sealed record class ProjectCreateDto
     [StringLength(
         maximumLength: 4000,
         ErrorMessage = "Description cannot exceed 4000 characters.")]
-    string? Description
+    string? Description,
+
+    [Required]
+    string CreatorId
 );

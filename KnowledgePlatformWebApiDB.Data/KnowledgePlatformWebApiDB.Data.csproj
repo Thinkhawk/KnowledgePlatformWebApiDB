@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KnowledgePlatformWebApiDB.DtoModels\KnowledgePlatformWebApiDB.DtoModels.csproj" />
     <ProjectReference Include="..\KnowledgePlatformWebApiDB.Infrastructure\KnowledgePlatformWebApiDB.Infrastructure.csproj" />
   </ItemGroup>
 

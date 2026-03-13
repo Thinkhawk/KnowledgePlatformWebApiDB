@@ -27,20 +27,22 @@ public sealed class Note
     public List<string> Tags { get; set; } = [];
 
 
+    // -------- Relationship with Team
+
     [Required]
     public int TeamId { get; set; }
-
-
-    [Required]
-    public string UserId { get; set; } = default!;
 
 
     [ForeignKey(nameof(TeamId))]
     public Team? Team { get; set; }
 
 
+    // -------- Relationship with ApplicationUser
+
+    [Required]
+    public string UserId { get; set; } = default!;
+
+
     [ForeignKey(nameof(UserId))]
-    public ApplicationUser? User { get; set; }
-
-
+    public ApplicationUser User { get; set; } = null!;
 }

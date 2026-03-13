@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using KnowledgePlatformWebApiDB.Data.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace KnowledgePlatformWebApiDB.DtoModels.TeamAccesses;
 
@@ -8,5 +9,8 @@ public sealed record class TeamAccessUpdateDto
     int AccessId,
 
     [Required]
-    string AccessLevel
+    Level AccessLevel,
+
+    [Required]
+    string RowVersion
 );

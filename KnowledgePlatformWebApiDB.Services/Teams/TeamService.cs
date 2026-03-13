@@ -88,8 +88,9 @@ public sealed class TeamService
             TeamId: entity.TeamId,
             ProjectId: entity.ProjectId,
             Name: entity.Name,
+            CreatorId: entity.CreatorId,
             CreatedAtUtc: entity.CreatedAtUtc,
-            ModifiedAtUtc: entity.UpdatedAtUtc,
+            UpdatedAtUtc: entity.UpdatedAtUtc,
             RowVersion: RowVersionHelper.ToBase64(entity.RowVersion)
         );
 
@@ -112,6 +113,7 @@ public sealed class TeamService
                 e.TeamId,
                 e.ProjectId,
                 e.Name,
+                e.CreatorId,
                 e.CreatedAtUtc,
                 e.UpdatedAtUtc,
                 RowVersionHelper.ToBase64(e.RowVersion)

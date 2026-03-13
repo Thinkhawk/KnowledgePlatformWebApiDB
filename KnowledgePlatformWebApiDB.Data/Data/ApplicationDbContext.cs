@@ -9,14 +9,12 @@ public class ApplicationDbContext
     : IdentityDbContext<ApplicationUser,ApplicationRole,string>
 {
 
-    //public DbSet<Team> Teams { get; set; }
-    public DbSet<Note> Notes { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<TeamAccess> TeamAccesses { get; set; }
-
+    public DbSet<Note> Notes { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : base(options)
@@ -27,66 +25,111 @@ public class ApplicationDbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // 1. Configure Composite Key for the Bridge Table
-        modelBuilder.Entity<RolePermission>()
-            .HasKey(rp => new { rp.RoleId, rp.PermissionId });
 
+        // --- RolePermission Constraints
 
-        // 2. Define Many-to-Many: Role <-> Permission
-        modelBuilder.Entity<RolePermission>()
-            .HasOne(rp => rp.Role)
-            .WithMany(r => r.RolePermissions)
-            .HasForeignKey(rp => rp.RoleId)
-            .OnDelete(DeleteBehavior.Cascade); // If role is deleted, mapping is removed
+        modelBuilder.Entity<RolePermission>(entity => {
 
-        modelBuilder.Entity<RolePermission>()
-            .HasOne(rp => rp.Permission)
-            .WithMany(p => p.RolePermissions)
-            .HasForeignKey(rp => rp.PermissionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            // 1. Configure Composite Key for the Bridge Table
+            entity.HasKey(rp => new { rp.RoleId, rp.PermissionId });
 
-        
+            // 2. Define Many-to-Many: Role <-> Permission
+            entity.HasOne(rp => rp.Role)
+                .WithMany(r => r.RolePermissions)
+                .HasForeignKey(rp => rp.RoleId)
+                .OnDelete(DeleteBehavior.Cascade); // If role is deleted, mapping is removed
 
+            entity.HasOne(rp => rp.Permission)
+                .WithMany(p => p.RolePermissions)
+                .HasForeignKey(rp => rp.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+            
 
-        modelBuilder.Entity<Project>()
-            .ToTable(t => t.HasCheckConstraint(
+        // --- Project Constraints
+
+        modelBuilder.Entity<Project>(entity =>
+        {
+
+            entity.ToTable(t => t.HasCheckConstraint(
                 name: "CK_Projects_Name_NotBlank",
                 sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
 
-        modelBuilder.Entity<Note>()
-            .ToTable(t => t.HasCheckConstraint(
+            entity.ToTable(t => t.HasCheckConstraint(
+                name: "CK_Projects_Name_NotBlank",
+                sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
+
+            entity.HasOne(p => p.User)
+            .WithMany(u => u.Projects)
+            .HasForeignKey(p => p.CreatorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(p => p.Name)
+            .IsUnique()
+            .HasDatabaseName("UQ_Projects_Name");
+
+            entity.Property(p => p.RowVersion)
+            .IsRowVersion();
+        });
+
+
+        // --- Team Constraints
+
+        modelBuilder.Entity<Team>(entity => {
+
+            entity.HasOne(tm => tm.User)
+            .WithMany()
+            .HasForeignKey(tm => tm.CreatorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(tm => new { tm.Name, tm.ProjectId})
+            .IsUnique()
+            .HasDatabaseName("UQ_ProjectTeams_Name");
+
+            entity.Property(tm => tm.RowVersion)
+            .IsRowVersion();
+        });
+
+
+        // --- Team Access
+
+        modelBuilder.Entity<TeamAccess>(entity => {
+
+            entity.Property(ta => ta.AccessLevel)
+            .HasConversion<string>();
+
+        });
+
+        // --- Note Constraints
+
+        modelBuilder.Entity<Note>(entity => {
+
+            entity.ToTable(t => t.HasCheckConstraint(
                 name: "CK_Notes_Title_NotBlank",
                 sql: "LEN(LTRIM(RTRIM(title))) > 0"));
-        modelBuilder.Entity<Project>()
-                .ToTable(t => t.HasCheckConstraint(
-                    name: "CK_Projects_Name_NotBlank",
-                    sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
 
-
-        modelBuilder.Entity<Note>()
-            .ToTable(t => t.HasCheckConstraint(
+            entity.ToTable(t => t.HasCheckConstraint(
                 name: "CK_Notes_Content_NotBlank",
                 sql: "LEN(LTRIM(RTRIM(content))) > 0"));
 
-        var valueComparer = new ValueComparer<List<string>>(
-            (c1, c2) => c1!.SequenceEqual(c2!),
-            c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-            c => c.ToList());
+            var valueComparer = new ValueComparer<List<string>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList());
 
-        modelBuilder.Entity<Note>()
-            .Property(n => n.Tags)
+            entity.Property(n => n.Tags)
             .HasConversion(
                 v => string.Join(',', v),
                 v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList())
             .Metadata.SetValueComparer(valueComparer);
 
-        modelBuilder.Entity<Project>()
-            .Property(e => e.RowVersion)
-            .IsRowVersion();
+            entity.HasIndex(n => new { n.Title, n.TeamId })
+            .IsUnique()
+            .HasDatabaseName("UQ_ProjectTeams_Name");
 
-        modelBuilder.Entity<Team>()
-            .Property(e => e.RowVersion)
+            entity.Property(n => n.RowVersion)
             .IsRowVersion();
+        });
     }
 
     public override int SaveChanges()

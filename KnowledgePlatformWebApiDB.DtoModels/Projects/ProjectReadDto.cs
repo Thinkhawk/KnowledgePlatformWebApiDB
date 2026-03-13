@@ -8,9 +8,11 @@ public sealed record class ProjectReadDto
 
     string? Description,
 
+    string CreatorId,
+
     DateTime CreatedAtUtc,
 
-    DateTime? ModifiedAtUtc,
+    DateTime? UpdatedAtUtc,
 
     string RowVersion
 );

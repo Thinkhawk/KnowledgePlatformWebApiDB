@@ -1,4 +1,6 @@
-﻿public class RolePermission
+﻿namespace KnowledgePlatformWebApiDB.Data.Entities;
+
+public class RolePermission
 {
     public string RoleId { get; set; }      // string RoleId
     public ApplicationRole Role { get; set; }

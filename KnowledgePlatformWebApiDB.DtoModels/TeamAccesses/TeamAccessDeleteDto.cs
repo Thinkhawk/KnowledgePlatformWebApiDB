@@ -5,5 +5,8 @@ namespace KnowledgePlatformWebApiDB.DtoModels.TeamAccesses;
 public sealed record class TeamAccessDeleteDto
 (
     [Required]
-    int AccessId
+    int AccessId,
+
+    [Required]
+    string RowVersion
 );

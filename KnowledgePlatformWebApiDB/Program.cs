@@ -114,6 +114,10 @@ builder.Services.AddScoped<NoteService>();
 
 var app = builder.Build();
 
+if (builder.Environment.IsDevelopment()) {
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 // 6. SEEDING LOGIC (Runs on startup)
 using (var scope = app.Services.CreateScope())

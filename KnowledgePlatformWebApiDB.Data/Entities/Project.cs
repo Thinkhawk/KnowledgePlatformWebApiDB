@@ -20,11 +20,15 @@ public sealed class Project : AuditableEntity
     [MaxLength(500)]
     public string? Description { get; set; }
 
-    [Required]
-    public string CreatedById { get; set; } = string.Empty;
+    // -------- Relationship with ApplicationUser
 
-    /// <summary>
-    /// Navigation property
-    /// </summary>
+    [Required]
+    public string CreatorId { get; set; } = string.Empty;
+
+    [ForeignKey(nameof(CreatorId))]
+    public ApplicationUser User { get; set; } = null!;
+
+
+    // ------- Navigation Property
     public ICollection<Team> Teams { get; set; } = new List<Team>();
 }
