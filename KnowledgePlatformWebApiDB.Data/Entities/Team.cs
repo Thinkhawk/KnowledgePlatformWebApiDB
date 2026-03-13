@@ -1,5 +1,4 @@
-﻿using KnowledgePlatformWebApiDB.Data.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -25,12 +24,22 @@ public sealed class Team : AuditableEntity
     [Required]
     public int ProjectId { get; set; }
 
+    [ForeignKey(nameof(ProjectId))]
     public Project Project { get; set; } = null!;
+
+
+    // -------- Relationship with ApplicationUser
+
+    [Required]
+    public string UserId { get; set; } = default!;
+
+    [ForeignKey(nameof(UserId))]
+    public ApplicationUser User { get; set; } = null!;
 
 
     // -------- Navigation Properties
 
     public ICollection<TeamAccess> TeamAccesses { get; set; } = new List<TeamAccess>();
 
-    //public ICollection<Note> Notes { get; set; } = new List<Note>();
+    public ICollection<Note> Note { get; set; } = new List<Note>();
 }

@@ -23,10 +23,13 @@ public sealed class TeamAccess : AuditableEntity
     [Column(TypeName = "varchar(10)")]
     public string AccessLevel { get; set; } = "Read";
 
+
     // -------- Relationship with Team
 
     [Required]
     public int TeamId { get; set; }
 
+
+    [ForeignKey(nameof(TeamId))]
     public Team Team { get; set; } = null!;
 }

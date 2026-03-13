@@ -23,8 +23,16 @@ public sealed class Project : AuditableEntity
     [Required]
     public string CreatedById { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Navigation property
-    /// </summary>
+    // -------- Relationship with ApplicationUser
+
+    [Required]
+    public string UserId { get; set; } = default!;
+
+
+    [ForeignKey(nameof(UserId))]
+    public ApplicationUser User { get; set; } = null!;
+
+
+    // ------- Navigation Property
     public ICollection<Team> Teams { get; set; } = new List<Team>();
 }
