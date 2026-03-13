@@ -1,5 +1,6 @@
 ﻿using KnowledgePlatformWebApiDB.Auth.DTO;
 using KnowledgePlatformWebApiDB.Auth.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers
@@ -33,8 +34,18 @@ namespace KnowledgePlatformWebApiDB.Controllers
             });
         }
 
+        [Authorize(Roles = "ProjectAdmin")]
+        [HttpPost("create-user")]
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+        {
+            var result = await _authService.CreateUserAsync(dto);
+
+            if (!result.Success)
+                return BadRequest(result.Message);
+
+            return Ok(result.Message);
+        }
 
 
-        
     }
 }

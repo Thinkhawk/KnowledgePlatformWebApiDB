@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
-public class ApplicationRole : IdentityRole<string>
+public class ApplicationRole : IdentityRole
 {
    
     public string Description { get; set; }=string.Empty;
