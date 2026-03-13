@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using KnowledgePlatformWebApiDB.Data.Enums;
+
 namespace KnowledgePlatformWebApiDB.DtoModels.TeamAccessDtos;
 
 public sealed record class TeamAccessCreateDto
@@ -11,5 +13,5 @@ public sealed record class TeamAccessCreateDto
     string UserId,
 
     [Required]
-    string AccessLevel
+    Level AccessLevel
 );

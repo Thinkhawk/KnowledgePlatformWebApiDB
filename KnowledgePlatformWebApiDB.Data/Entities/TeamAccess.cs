@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using KnowledgePlatformWebApiDB.Data.Enums;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -21,7 +22,7 @@ public sealed class TeamAccess : AuditableEntity
     [Required]
     [MaxLength(10)]
     [Column(TypeName = "varchar(10)")]
-    public string AccessLevel { get; set; } = "Read";
+    public Level AccessLevel { get; set; } = Level.Read;
 
 
     // -------- Relationship with Team

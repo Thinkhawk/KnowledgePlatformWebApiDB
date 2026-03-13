@@ -1,4 +1,6 @@
-﻿namespace KnowledgePlatformWebApiDB.DtoModels.TeamAccessDtos;
+﻿using KnowledgePlatformWebApiDB.Data.Enums;
+
+namespace KnowledgePlatformWebApiDB.DtoModels.TeamAccessDtos;
 
 public sealed record class TeamAccessReadDto
 (
@@ -8,7 +10,7 @@ public sealed record class TeamAccessReadDto
 
     string UserId,
 
-    string AccessLevel,
+    Level AccessLevel,
 
     DateTime CreatedAtUtc
 );

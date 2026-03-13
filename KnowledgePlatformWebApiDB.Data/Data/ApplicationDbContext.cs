@@ -9,14 +9,12 @@ public class ApplicationDbContext
     : IdentityDbContext<ApplicationUser,ApplicationRole,string>
 {
 
-    //public DbSet<Team> Teams { get; set; }
-    public DbSet<Note> Notes { get; set; }
     public DbSet<Permission> Permissions { get; set; }
     public DbSet<RolePermission> RolePermissions { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<TeamAccess> TeamAccesses { get; set; }
-
+    public DbSet<Note> Notes { get; set; }
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
     : base(options)
@@ -50,27 +48,28 @@ public class ApplicationDbContext
 
         // --- Project Constraints
 
-        modelBuilder.Entity<Project>(entity => {
+        modelBuilder.Entity<Project>(entity =>
+        {
 
             entity.ToTable(t => t.HasCheckConstraint(
-                    name: "CK_Projects_Name_NotBlank",
-                    sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
+                name: "CK_Projects_Name_NotBlank",
+                sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
 
             entity.ToTable(t => t.HasCheckConstraint(
-                    name: "CK_Projects_Name_NotBlank",
-                    sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
+                name: "CK_Projects_Name_NotBlank",
+                sql: "LEN(LTRIM(RTRIM(Name))) > 0"));
 
             entity.HasOne(p => p.User)
-                .WithMany(u => u.Projects)
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            .WithMany(u => u.Projects)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(p => p.Name)
-                  .IsUnique()
-                  .HasDatabaseName("UQ_Projects_Name");
+            .IsUnique()
+            .HasDatabaseName("UQ_Projects_Name");
 
             entity.Property(p => p.RowVersion)
-                .IsRowVersion();
+            .IsRowVersion();
         });
 
 
@@ -84,13 +83,22 @@ public class ApplicationDbContext
             .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(tm => new { tm.Name, tm.ProjectId})
-                  .IsUnique()
-                  .HasDatabaseName("UQ_ProjectTeams_Name");
+            .IsUnique()
+            .HasDatabaseName("UQ_ProjectTeams_Name");
 
             entity.Property(tm => tm.RowVersion)
             .IsRowVersion();
         });
 
+
+        // --- Team Access
+
+        modelBuilder.Entity<TeamAccess>(entity => {
+
+            entity.Property(ta => ta.AccessLevel)
+            .HasConversion<string>();
+
+        });
 
         // --- Note Constraints
 
@@ -101,8 +109,8 @@ public class ApplicationDbContext
                 sql: "LEN(LTRIM(RTRIM(title))) > 0"));
 
             entity.ToTable(t => t.HasCheckConstraint(
-                            name: "CK_Notes_Content_NotBlank",
-                            sql: "LEN(LTRIM(RTRIM(content))) > 0"));
+                name: "CK_Notes_Content_NotBlank",
+                sql: "LEN(LTRIM(RTRIM(content))) > 0"));
 
             var valueComparer = new ValueComparer<List<string>>(
                 (c1, c2) => c1!.SequenceEqual(c2!),
@@ -110,17 +118,17 @@ public class ApplicationDbContext
                 c => c.ToList());
 
             entity.Property(n => n.Tags)
-                .HasConversion(
-                    v => string.Join(',', v),
-                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList())
-                .Metadata.SetValueComparer(valueComparer);
+            .HasConversion(
+                v => string.Join(',', v),
+                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList())
+            .Metadata.SetValueComparer(valueComparer);
 
             entity.HasIndex(n => new { n.Title, n.TeamId })
-                .IsUnique()
-                .HasDatabaseName("UQ_ProjectTeams_Name");
+            .IsUnique()
+            .HasDatabaseName("UQ_ProjectTeams_Name");
 
             entity.Property(n => n.RowVersion)
-                .IsRowVersion();
+            .IsRowVersion();
         });
     }
 
