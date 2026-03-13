@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KnowledgePlatformWebApiDB.Data.Entities;
 
-[Table("Notes")]
+[Table("Notes", Schema = "dbo")]
 public sealed class Note
     : AuditableEntity
 {
