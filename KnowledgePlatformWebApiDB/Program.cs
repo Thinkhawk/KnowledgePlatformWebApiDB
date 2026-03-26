@@ -116,7 +116,25 @@ builder.Services.AddScoped<TeamAccessService>();
 builder.Services.AddScoped<NoteService>();
 builder.Services.AddScoped<UserAccessService>();
 
-
+string? angularDevServer
+    = builder.Configuration.GetValue<string>("MyAppSettings:AngularDevServer");
+string? angularCorsPolicyName
+    = builder.Configuration.GetValue<string>("MyAppSettings:AngularCORSPolicyName");
+if (!string.IsNullOrEmpty(angularDevServer)
+    && !string.IsNullOrEmpty(angularCorsPolicyName))
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy(angularCorsPolicyName, policy =>
+        {
+            policy
+                .WithOrigins(angularDevServer)      // OR .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod()                   // OR .WithMethods("GET", "PUT", "POST", "DELETE", "PATCH")
+                .AllowCredentials();                // Needed for auth scenarios
+        });
+    });
+}
 
 /***********************************************************************************/
 /************************************ BUILDING *************************************/
@@ -128,6 +146,12 @@ if (builder.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+
+    if (!string.IsNullOrEmpty(angularDevServer)
+    && !string.IsNullOrEmpty(angularCorsPolicyName))
+    {
+        app.UseCors(angularCorsPolicyName);
+    }
 }
 
 // 6. SEEDING LOGIC (Runs on startup)
