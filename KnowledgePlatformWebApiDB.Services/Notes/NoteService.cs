@@ -7,6 +7,7 @@ using KnowledgePlatformWebApiDB.Infrastructure.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.Json;
 
 namespace KnowledgePlatformWebApiDB.Services.Notes;
 
@@ -57,13 +58,42 @@ public sealed class NoteService
 
         _dbContext.Notes.Add(note);
 
-        //await _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync();
 
-        var location = $"/api/{note.Team!.ProjectId}/{note.TeamId}/notes/{note.NoteId}";
-
+        var location = $"/api/notes/{note.NoteId}";
         _logger.LogInformation("Note created successfully. NoteId: {NoteId}, Title: {Title}", note.NoteId, note.Title);
 
         return Result<string>.Created(location);
+    }
+
+    public async Task<Result<NoteReadDto>> ReadOneAsync(Guid id)
+    {
+        var entity = await _dbContext.Notes
+            .AsNoTracking()
+            .FirstOrDefaultAsync(n => n.NoteId.Equals(id));
+
+        if (entity is null)
+        {
+            _logger.LogWarning("Note retrieval failed: NoteId {NoteId} not found.", id);
+
+            return Result<NoteReadDto>.NotFound($"Note with id '{id}' not found.");
+        }
+
+        var note = new NoteReadDto(
+            NoteId: entity.NoteId,
+            Title: entity.Title!,
+            Content: entity.Content!,
+            Tags: entity.Tags,
+            TeamId: entity.TeamId,
+            UserId: entity.UserId,
+            CreatedAtUtc: entity.CreatedAtUtc,
+            UpdatedAtUtc: entity.UpdatedAtUtc,
+            RowVersion: RowVersionHelper.ToBase64(entity.RowVersion)
+        );
+
+        _logger.LogInformation("Note retrieved successfully. NoteId: {NoteId}", id);
+
+        return Result<NoteReadDto>.Success(note);
     }
 
     public async Task<Result<IReadOnlyList<NoteReadDto>>> ReadAllAsync()
@@ -92,64 +122,91 @@ public sealed class NoteService
         return Result<IReadOnlyList<NoteReadDto>>.Success(readDtos);
     }
 
-    public async Task<Result<IReadOnlyList<NoteReadDto>>> ReadWithFilterAsync(NoteFilterDto filterDto)
+    public async Task<Result<IReadOnlyList<NoteReadDto>>> ReadWithTeamIdAsync(int teamId)
     {
-        var query = _dbContext.Notes.AsNoTracking();
+        var notes = await _dbContext.Notes
+            .AsNoTracking()
+            .OrderBy(n => n.UpdatedAtUtc)
+            .ToListAsync();
+
+        var readDtos = notes.FindAll(note => note.TeamId.Equals(teamId)).Select(note => new NoteReadDto(
+                NoteId: note.NoteId,
+                Title: note.Title!,
+                Content: note.Content!,
+                Tags: note.Tags,
+                TeamId: note.TeamId,
+                UserId: note.UserId,
+                CreatedAtUtc: note.CreatedAtUtc,
+                UpdatedAtUtc: note.UpdatedAtUtc,
+                RowVersion: RowVersionHelper.ToBase64(note.RowVersion)
+
+            )).ToList().AsReadOnly();
+
+        _logger.LogInformation("Retrived {NotesCount} notes.", readDtos.Count);
+
+        return Result<IReadOnlyList<NoteReadDto>>.Success(readDtos);
+    }
+
+    public async Task<Result<IReadOnlyList<NoteReadDto>>> ReadWithFilterAsync(int teamId, NoteFilterDto filterDto)
+    {
+        var query = _dbContext.Notes.AsNoTracking().Where(n => n.TeamId == teamId);
 
         if (filterDto.NoteId.HasValue && filterDto.NoteId != Guid.Empty)
         {
             query = query.Where(n => n.NoteId == filterDto.NoteId);
         }
-        if (filterDto.Title.NullIfWhiteSpace() is not null)
+
+        if (!string.IsNullOrWhiteSpace(filterDto.Title))
         {
-            query = query.Where(n => n.Title!.ToUpper() == filterDto.Title!.NormalizeKey());
+            var searchTitle = filterDto.Title.NormalizeKey();
+                                                          
+            query = query.Where(n => n.Title == searchTitle);
         }
-        if (filterDto.UserId.NullIfWhiteSpace() is not null)
+
+        if (!string.IsNullOrWhiteSpace(filterDto.UserId))
         {
-            query = query.Where(n => n.UserId!.ToUpper() == filterDto.UserId!.NormalizeKey());
+            var searchUser = filterDto.UserId.NormalizeKey();
+            query = query.Where(n => n.UserId == searchUser);
         }
+
         if (filterDto.CreatedAtUtc.HasValue)
         {
-            query = query.Where(n => n.CreatedAtUtc == filterDto.CreatedAtUtc);
+            query = query.Where(n => n.CreatedAtUtc.Date == filterDto.CreatedAtUtc.Value.Date);
         }
         if (filterDto.UpdatedAtUtc.HasValue)
         {
-            query = query.Where(n => n.UpdatedAtUtc == filterDto.UpdatedAtUtc);
+            query = query.Where(n => n.UpdatedAtUtc!.Value.Date == filterDto.UpdatedAtUtc.Value.Date);
         }
 
-        var tags = filterDto.Tags;
-        if (!tags.IsNullOrEmpty())
+        var notesList = await query.ToListAsync();
+
+        if (filterDto.Tags?.Any() == true)
         {
-            foreach (var tag in tags!)
-            {
-                query = query.Where(n => n.Tags.Contains(tag));
-            }
+            notesList = notesList.Where(note =>
+                filterDto.Tags.All(filterTag =>
+                    note.Tags != null && note.Tags.Contains(filterTag))
+            ).ToList();
         }
 
-        var notes = await query.ToListAsync();
+        var notes = notesList.Select(note => new NoteReadDto(
+            note.NoteId,
+            note.Title!,
+            note.Content!,
+            note.Tags,
+            note.TeamId,
+            note.UserId,
+            note.CreatedAtUtc,
+            note.UpdatedAtUtc,
+            RowVersionHelper.ToBase64(note.RowVersion)
+        )).ToList();
 
-        if (notes.IsNullOrEmpty())
+        if (notes.Count == 0)
         {
-            _logger.LogWarning("Note retrieval failed for the provided filters.");
-            return Result<IReadOnlyList<NoteReadDto>>.NotFound("No notes found matching the criteria.");
+            _logger.LogWarning("No notes found for team {TeamId} with provided filters.", teamId);
         }
 
-        var readDtos = notes.Select(note => new NoteReadDto(
-            NoteId: note.NoteId,
-            Title: note.Title!,
-            Content: note.Content!,
-            Tags: note.Tags,
-            TeamId: note.TeamId,
-            UserId: note.UserId,
-            CreatedAtUtc: note.CreatedAtUtc,
-            UpdatedAtUtc: note.UpdatedAtUtc,
-            RowVersion: RowVersionHelper.ToBase64(note.RowVersion)
-
-        )).ToList().AsReadOnly();
-
-        _logger.LogInformation("Retrived {NotesCount} notes.", readDtos.Count);
-
-        return Result<IReadOnlyList<NoteReadDto>>.Success(readDtos);
+        _logger.LogInformation("Retrieved {NotesCount} notes.", notes.Count);
+        return Result<IReadOnlyList<NoteReadDto>>.Success(notes.AsReadOnly());
     }
 
     public async Task<Result> UpdateAsync(Guid routeNoteId, NoteUpdateDto updateDto)
@@ -227,6 +284,7 @@ public sealed class NoteService
 
     public async Task<Result> DeleteAsync(Guid routeNoteId, NoteDeleteDto deleteDto)
     {
+        Console.WriteLine("Entered ---- "+routeNoteId);
         if (routeNoteId != deleteDto.NoteId)
         {
             _logger.LogWarning("Note delete failed: NoteId in route {RouteNoteId} doesn't match the NoteId in payload {PayloadNoteId}.", routeNoteId, deleteDto.NoteId);

@@ -19,7 +19,6 @@ public sealed class Note
 
 
     [Display(Name = "Content of the Note")]
-    [Required(ErrorMessage = "{0} cannot be empty.")]
     public string? Content { get; set; }
 
 
