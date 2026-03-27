@@ -17,7 +17,6 @@ public sealed record class NoteUpdateDto
 
 
     [Display(Name = "Content of the Note")]
-    [Required(ErrorMessage = "{0} cannot be empty.")]
     string Content,
 
 

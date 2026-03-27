@@ -122,9 +122,9 @@ public class ApplicationDbContext
                 name: "CK_Notes_Title_NotBlank",
                 sql: "LEN(LTRIM(RTRIM(title))) > 0"));
 
-            entity.ToTable(t => t.HasCheckConstraint(
-                name: "CK_Notes_Content_NotBlank",
-                sql: "LEN(LTRIM(RTRIM(content))) > 0"));
+            //entity.ToTable(t => t.HasCheckConstraint(
+            //    name: "CK_Notes_Content_NotBlank",
+            //    sql: "LEN(LTRIM(RTRIM(content))) > 0"));
 
             var valueComparer = new ValueComparer<List<string>>(
                 (c1, c2) => c1!.SequenceEqual(c2!),

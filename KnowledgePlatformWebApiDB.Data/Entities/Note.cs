@@ -23,7 +23,7 @@ public sealed class Note
 
 
     [Display(Name = "Tags of the Note")]
-    public List<string> Tags { get; set; } = [];
+    public List<string>? Tags { get; set; } = [];
 
 
     // -------- Relationship with Team
