@@ -8,7 +8,8 @@ public sealed record class NoteFilterDto(
     Guid? NoteId,
     string? Title,
     List<string>? Tags,
-    string? UserId,
+    string? CreatorId,
+    string? UpdaterId,
     DateTime? CreatedAtUtc,
     DateTime? UpdatedAtUtc
 );

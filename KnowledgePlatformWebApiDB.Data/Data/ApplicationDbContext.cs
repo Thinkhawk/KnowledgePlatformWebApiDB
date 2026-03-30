@@ -122,9 +122,9 @@ public class ApplicationDbContext
                 name: "CK_Notes_Title_NotBlank",
                 sql: "LEN(LTRIM(RTRIM(title))) > 0"));
 
-            entity.ToTable(t => t.HasCheckConstraint(
-                name: "CK_Notes_Content_NotBlank",
-                sql: "LEN(LTRIM(RTRIM(content))) > 0"));
+            //entity.ToTable(t => t.HasCheckConstraint(
+            //    name: "CK_Notes_Content_NotBlank",
+            //    sql: "LEN(LTRIM(RTRIM(content))) > 0"));
 
             var valueComparer = new ValueComparer<List<string>>(
                 (c1, c2) => c1!.SequenceEqual(c2!),
@@ -133,8 +133,8 @@ public class ApplicationDbContext
 
             entity.Property(n => n.Tags)
             .HasConversion(
-                v => string.Join(',', v),
-                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList())
+                v => v != null ? string.Join(',', v) : null,
+                v => v != null ? v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList() : null)
             .Metadata.SetValueComparer(valueComparer);
 
             entity.HasIndex(n => new { n.Title, n.TeamId })
@@ -146,9 +146,14 @@ public class ApplicationDbContext
             .HasForeignKey(n => n.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(n => n.User)
-            .WithMany(u => u.Notes)
-            .HasForeignKey(n => n.UserId)
+            entity.HasOne(n => n.Creator)
+            .WithMany(u => u.CreatedNotes)
+            .HasForeignKey(n => n.CreatorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(n => n.Updater)
+            .WithMany(u => u.UpdatedNotes)
+            .HasForeignKey(n => n.UpdaterId)
             .OnDelete(DeleteBehavior.Restrict);
 
             entity.Property(n => n.RowVersion)

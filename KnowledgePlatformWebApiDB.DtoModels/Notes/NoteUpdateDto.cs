@@ -17,12 +17,14 @@ public sealed record class NoteUpdateDto
 
 
     [Display(Name = "Content of the Note")]
-    [Required(ErrorMessage = "{0} cannot be empty.")]
-    string Content,
+    string? Content,
 
 
     [Display(Name = "Tags of the Note")]
-    List<string> Tags,
+    List<string>? Tags,
+
+    [Display(Name = "Updater of the Note")]
+    string? UpdaterId,
 
     [Required(ErrorMessage = "Rowversion is required for update.")]
     string RowVersion

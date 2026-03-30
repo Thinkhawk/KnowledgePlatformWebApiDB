@@ -14,12 +14,11 @@ public sealed record class NoteCreateDto
 
 
     [Display(Name = "Content of the Note")]
-    [Required(ErrorMessage = "{0} cannot be empty.")]
-    string Content,
+    string? Content,
 
 
     [Display(Name = "Tags of the Note")]
-    List<string> Tags,
+    List<string>? Tags,
 
 
     [Required]
@@ -27,6 +26,6 @@ public sealed record class NoteCreateDto
 
 
     [Required]
-    string UserId
+    string CreatorId
 
 );

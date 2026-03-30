@@ -19,12 +19,11 @@ public sealed class Note
 
 
     [Display(Name = "Content of the Note")]
-    [Required(ErrorMessage = "{0} cannot be empty.")]
     public string? Content { get; set; }
 
 
     [Display(Name = "Tags of the Note")]
-    public List<string> Tags { get; set; } = [];
+    public List<string>? Tags { get; set; } = [];
 
 
     // -------- Relationship with Team
@@ -40,9 +39,14 @@ public sealed class Note
     // -------- Relationship with ApplicationUser
 
     [Required]
-    public string UserId { get; set; } = default!;
+    public string CreatorId { get; set; } = default!;
 
+    [ForeignKey(nameof(CreatorId))]
+    public ApplicationUser Creator { get; set; } = null!;
 
-    [ForeignKey(nameof(UserId))]
-    public ApplicationUser User { get; set; } = null!;
+    public string? UpdaterId { get; set; } = default!;
+
+    [ForeignKey(nameof(UpdaterId))]
+    public ApplicationUser Updater { get; set; } = null!;
+
 }
