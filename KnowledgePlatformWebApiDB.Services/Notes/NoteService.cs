@@ -53,7 +53,8 @@ public sealed class NoteService
             Content = createDto.Content.NullIfWhiteSpace(),
             Tags = createDto.Tags,
             TeamId = createDto.TeamId,
-            UserId = createDto.UserId,
+            CreatorId = createDto.CreatorId,
+            UpdaterId = createDto.CreatorId
         };
 
         _dbContext.Notes.Add(note);
@@ -68,52 +69,62 @@ public sealed class NoteService
 
     public async Task<Result<NoteReadDto>> ReadOneAsync(Guid id)
     {
-        var entity = await _dbContext.Notes
+        var note = await _dbContext.Notes
             .AsNoTracking()
+            .Include(n => n.Creator)
+            .Include(n => n.Updater)
             .FirstOrDefaultAsync(n => n.NoteId.Equals(id));
 
-        if (entity is null)
+        if (note is null)
         {
             _logger.LogWarning("Note retrieval failed: NoteId {NoteId} not found.", id);
 
             return Result<NoteReadDto>.NotFound($"Note with id '{id}' not found.");
         }
 
-        var note = new NoteReadDto(
-            NoteId: entity.NoteId,
-            Title: entity.Title!,
-            Content: entity.Content!,
-            Tags: entity.Tags,
-            TeamId: entity.TeamId,
-            UserId: entity.UserId,
-            CreatedAtUtc: entity.CreatedAtUtc,
-            UpdatedAtUtc: entity.UpdatedAtUtc,
-            RowVersion: RowVersionHelper.ToBase64(entity.RowVersion)
+        var readDto = new NoteReadDto(
+            NoteId: note.NoteId,
+            Title: note.Title!,
+            Content: note.Content!,
+            Tags: note.Tags,
+            TeamId: note.TeamId,
+            CreatorId: note.CreatorId,
+            CreatorName: note.Creator?.UserName ?? "Unknown User",
+            CreatedAtUtc: note.CreatedAtUtc,
+            UpdaterId: note.UpdaterId ?? "Never Updated",
+            UpdaterName: note.Updater?.UserName ?? "Never Updated",
+            UpdatedAtUtc: note.UpdatedAtUtc,
+            RowVersion: RowVersionHelper.ToBase64(note.RowVersion)
         );
 
         _logger.LogInformation("Note retrieved successfully. NoteId: {NoteId}", id);
 
-        return Result<NoteReadDto>.Success(note);
+        return Result<NoteReadDto>.Success(readDto);
     }
 
     public async Task<Result<IReadOnlyList<NoteReadDto>>> ReadAllAsync()
     {
         var notes = await _dbContext.Notes
             .AsNoTracking()
+            .Include(n => n.Creator)
+            .Include(n => n.Updater)
             .OrderBy(n => n.UpdatedAtUtc)
             .ToListAsync();
 
 
         var readDtos = notes.Select(note => new NoteReadDto(
-                NoteId: note.NoteId,
-                Title: note.Title!,
-                Content: note.Content!,
-                Tags: note.Tags,
-                TeamId: note.TeamId,
-                UserId: note.UserId,
-                CreatedAtUtc: note.CreatedAtUtc,
-                UpdatedAtUtc: note.UpdatedAtUtc,
-                RowVersion: RowVersionHelper.ToBase64(note.RowVersion)
+            NoteId: note.NoteId,
+            Title: note.Title!,
+            Content: note.Content!,
+            Tags: note.Tags,
+            TeamId: note.TeamId,
+            CreatorId: note.CreatorId,
+            CreatorName: note.Creator?.UserName ?? "Unknown User",
+            CreatedAtUtc: note.CreatedAtUtc,
+            UpdaterId: note.UpdaterId ?? "Never Updated",
+            UpdaterName: note.Updater?.UserName ?? "Never Updated",
+            UpdatedAtUtc: note.UpdatedAtUtc,
+            RowVersion: RowVersionHelper.ToBase64(note.RowVersion)
 
             )).ToList().AsReadOnly();
 
@@ -126,19 +137,25 @@ public sealed class NoteService
     {
         var notes = await _dbContext.Notes
             .AsNoTracking()
+            .Include(n => n.Creator)
+            .Include(n => n.Updater)
+            .Where(n => n.TeamId == teamId)
             .OrderBy(n => n.UpdatedAtUtc)
             .ToListAsync();
 
         var readDtos = notes.FindAll(note => note.TeamId.Equals(teamId)).Select(note => new NoteReadDto(
-                NoteId: note.NoteId,
-                Title: note.Title!,
-                Content: note.Content!,
-                Tags: note.Tags,
-                TeamId: note.TeamId,
-                UserId: note.UserId,
-                CreatedAtUtc: note.CreatedAtUtc,
-                UpdatedAtUtc: note.UpdatedAtUtc,
-                RowVersion: RowVersionHelper.ToBase64(note.RowVersion)
+            NoteId: note.NoteId,
+            Title: note.Title!,
+            Content: note.Content!,
+            Tags: note.Tags,
+            TeamId: note.TeamId,
+            CreatorId: note.CreatorId,
+            CreatorName: note.Creator?.UserName ?? "Unknown User",
+            CreatedAtUtc: note.CreatedAtUtc,
+            UpdaterId: note.UpdaterId ?? "Never Updated",
+            UpdaterName: note.Updater?.UserName ?? "Never Updated",
+            UpdatedAtUtc: note.UpdatedAtUtc,
+            RowVersion: RowVersionHelper.ToBase64(note.RowVersion)
 
             )).ToList().AsReadOnly();
 
@@ -149,7 +166,11 @@ public sealed class NoteService
 
     public async Task<Result<IReadOnlyList<NoteReadDto>>> ReadWithFilterAsync(int teamId, NoteFilterDto filterDto)
     {
-        var query = _dbContext.Notes.AsNoTracking().Where(n => n.TeamId == teamId);
+        var query = _dbContext.Notes
+            .Include(n => n.Creator)
+            .Include(n => n.Updater)
+            .AsNoTracking()
+            .Where(n => n.TeamId == teamId);
 
         if (filterDto.NoteId.HasValue && filterDto.NoteId != Guid.Empty)
         {
@@ -163,10 +184,16 @@ public sealed class NoteService
             query = query.Where(n => n.Title == searchTitle);
         }
 
-        if (!string.IsNullOrWhiteSpace(filterDto.UserId))
+        if (!string.IsNullOrWhiteSpace(filterDto.CreatorId))
         {
-            var searchUser = filterDto.UserId.NormalizeKey();
-            query = query.Where(n => n.UserId == searchUser);
+            var searchUser = filterDto.CreatorId.NormalizeKey();
+            query = query.Where(n => n.CreatorId == searchUser);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterDto.UpdaterId))
+        {
+            var searchUser = filterDto.UpdaterId.NormalizeKey();
+            query = query.Where(n => n.UpdaterId == searchUser);
         }
 
         if (filterDto.CreatedAtUtc.HasValue)
@@ -189,15 +216,18 @@ public sealed class NoteService
         }
 
         var notes = notesList.Select(note => new NoteReadDto(
-            note.NoteId,
-            note.Title!,
-            note.Content!,
-            note.Tags,
-            note.TeamId,
-            note.UserId,
-            note.CreatedAtUtc,
-            note.UpdatedAtUtc,
-            RowVersionHelper.ToBase64(note.RowVersion)
+            NoteId: note.NoteId,
+            Title: note.Title!,
+            Content: note.Content!,
+            Tags: note.Tags,
+            TeamId: note.TeamId,
+            CreatorId: note.CreatorId,
+            CreatorName: note.Creator?.UserName ?? "Unknown User",
+            CreatedAtUtc: note.CreatedAtUtc,
+            UpdaterId: note.UpdaterId ?? "Never Updated",
+            UpdaterName: note.Updater?.UserName ?? "Never Updated",
+            UpdatedAtUtc: note.UpdatedAtUtc,
+            RowVersion: RowVersionHelper.ToBase64(note.RowVersion)
         )).ToList();
 
         if (notes.Count == 0)
@@ -266,6 +296,7 @@ public sealed class NoteService
         note.Title = title;
         note.Content = updateDto.Content.NullIfWhiteSpace();
         note.Tags = updateDto.Tags;
+        note.UpdaterId = updateDto.UpdaterId!;
 
         try
         {

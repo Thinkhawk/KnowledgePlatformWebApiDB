@@ -39,9 +39,14 @@ public sealed class Note
     // -------- Relationship with ApplicationUser
 
     [Required]
-    public string UserId { get; set; } = default!;
+    public string CreatorId { get; set; } = default!;
 
+    [ForeignKey(nameof(CreatorId))]
+    public ApplicationUser Creator { get; set; } = null!;
 
-    [ForeignKey(nameof(UserId))]
-    public ApplicationUser User { get; set; } = null!;
+    public string? UpdaterId { get; set; } = default!;
+
+    [ForeignKey(nameof(UpdaterId))]
+    public ApplicationUser Updater { get; set; } = null!;
+
 }

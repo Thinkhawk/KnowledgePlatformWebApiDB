@@ -133,8 +133,8 @@ public class ApplicationDbContext
 
             entity.Property(n => n.Tags)
             .HasConversion(
-                v => string.Join(',', v),
-                v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList())
+                v => v != null ? string.Join(',', v) : null,
+                v => v != null ? v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList() : null)
             .Metadata.SetValueComparer(valueComparer);
 
             entity.HasIndex(n => new { n.Title, n.TeamId })
@@ -146,9 +146,14 @@ public class ApplicationDbContext
             .HasForeignKey(n => n.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasOne(n => n.User)
-            .WithMany(u => u.Notes)
-            .HasForeignKey(n => n.UserId)
+            entity.HasOne(n => n.Creator)
+            .WithMany(u => u.CreatedNotes)
+            .HasForeignKey(n => n.CreatorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(n => n.Updater)
+            .WithMany(u => u.UpdatedNotes)
+            .HasForeignKey(n => n.UpdaterId)
             .OnDelete(DeleteBehavior.Restrict);
 
             entity.Property(n => n.RowVersion)

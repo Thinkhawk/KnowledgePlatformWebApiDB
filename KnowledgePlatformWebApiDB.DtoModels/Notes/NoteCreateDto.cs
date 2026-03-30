@@ -14,11 +14,11 @@ public sealed record class NoteCreateDto
 
 
     [Display(Name = "Content of the Note")]
-    string Content,
+    string? Content,
 
 
     [Display(Name = "Tags of the Note")]
-    List<string> Tags,
+    List<string>? Tags,
 
 
     [Required]
@@ -26,6 +26,6 @@ public sealed record class NoteCreateDto
 
 
     [Required]
-    string UserId
+    string CreatorId
 
 );
