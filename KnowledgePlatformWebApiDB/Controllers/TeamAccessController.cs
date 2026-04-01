@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
 
+// Assigning/managing team members requires ProjectAdmin or ProjectLead.
 [Route("api/[controller]")]
 public sealed class TeamAccessController : BaseApiController
 {
@@ -26,16 +27,16 @@ public sealed class TeamAccessController : BaseApiController
     }
 
     // GET ALL Team Access records
-    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet]
-    public async Task<IActionResult> ReadAllTeamAccess()
+    public async Task<IActionResult> ReadAllTeamAccess([FromQuery] int? teamId)
     {
-        var result = await _teamAccessService.ReadAllAsync();
+        var result = await _teamAccessService.ReadAllAsync(teamId);
         return HandleResult(result);
     }
 
     // GET ONE Team Access
-    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet("{accessId:int}")]
     public async Task<IActionResult> ReadOneTeamAccess(int accessId)
     {

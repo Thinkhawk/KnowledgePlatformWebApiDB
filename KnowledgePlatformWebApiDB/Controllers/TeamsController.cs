@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
 
+// All endpoints require a valid JWT token.
+// ProjectAdmin, ProjectLead: create, read, update, delete teams within assigned projects.
+// TeamMember: read only.
+[Authorize]
 [Route("api/[controller]")]
 public sealed class TeamsController : BaseApiController
 {
@@ -33,8 +37,17 @@ public sealed class TeamsController : BaseApiController
         return HandleResult(result);
     }
 
+    // GET TEAMS BY PROJECT — any authenticated user
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
+    [HttpGet("/api/projects/{projectId:int}/teams")]
+    public async Task<IActionResult> ReadTeamsByProject(int projectId)
+    {
+        var result = await _teamService.ReadByProjectAsync(projectId);
+        return HandleResult(result);
+    }
+
     // GET ONE TEAM
-    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet("{teamId:int}")]
     public async Task<IActionResult> ReadOneTeam(int teamId)
     {

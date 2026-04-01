@@ -63,15 +63,14 @@ public sealed class TeamAccessService
         {
             TeamId = dto.TeamId,
             UserId = dto.UserId,
-            AccessLevel = dto.AccessLevel,
-            CreatedAtUtc = DateTime.UtcNow
+            AccessLevel = dto.AccessLevel
         };
 
         _dbContext.TeamAccesses.Add(entity);
 
         await _dbContext.SaveChangesAsync();
 
-        var location = $"/api/team access/{entity.AccessId}";
+        var location = $"/api/teamaccess/{entity.AccessId}";
 
         _logger.LogInformation(
             "TeamAccess created successfully. AccessId: {AccessId}",
@@ -86,24 +85,31 @@ public sealed class TeamAccessService
     /// </summary>
     public async Task<Result<TeamAccessReadDto>> ReadOneAsync(int id)
     {
-        var entity = await _dbContext.TeamAccesses
+        var result = await _dbContext.TeamAccesses
             .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.AccessId == id);
+            .Where(a => a.AccessId == id)
+            .Join(_dbContext.Users,
+                a => a.UserId,
+                u => u.Id,
+                (a, u) => new { Access = a, User = u })
+            .FirstOrDefaultAsync();
 
-        if (entity is null)
+        if (result is null)
         {
             return Result<TeamAccessReadDto>.NotFound(
                 $"TeamAccess with id '{id}' not found.");
         }
 
         var dto = new TeamAccessReadDto(
-            AccessId: entity.AccessId,
-            TeamId: entity.TeamId,
-            UserId: entity.UserId,
-            AccessLevel: entity.AccessLevel,
-            CreatedAtUtc: entity.CreatedAtUtc,
-            UpdatedAtUtc: entity.UpdatedAtUtc,
-            RowVersion: RowVersionHelper.ToBase64(entity.RowVersion)
+            AccessId: result.Access.AccessId,
+            TeamId: result.Access.TeamId,
+            UserId: result.Access.UserId,
+            UserName: result.User.UserName,
+            Email: result.User.Email,
+            AccessLevel: result.Access.AccessLevel,
+            CreatedAtUtc: result.Access.CreatedAtUtc,
+            UpdatedAtUtc: result.Access.UpdatedAtUtc,
+            RowVersion: RowVersionHelper.ToBase64(result.Access.RowVersion)
         );
 
         return Result<TeamAccessReadDto>.Success(dto);
@@ -111,24 +117,32 @@ public sealed class TeamAccessService
 
 
     /// <summary>
-    /// Get all TeamAccess records
+    /// Get all TeamAccess records, optionally filtered by teamId
     /// </summary>
-    public async Task<Result<IReadOnlyList<TeamAccessReadDto>>> ReadAllAsync()
+    public async Task<Result<IReadOnlyList<TeamAccessReadDto>>> ReadAllAsync(int? teamId = null)
     {
-        var entities = await _dbContext.TeamAccesses
+        var query = _dbContext.TeamAccesses
             .AsNoTracking()
-            .OrderBy(a => a.AccessId)
-            .ToListAsync();
+            .Where(a => !teamId.HasValue || a.TeamId == teamId.Value)
+            .Join(_dbContext.Users,
+                a => a.UserId,
+                u => u.Id,
+                (a, u) => new { Access = a, User = u })
+            .OrderBy(x => x.Access.AccessId);
 
-        var dtos = entities
-            .Select(e => new TeamAccessReadDto(
-                e.AccessId,
-                e.TeamId,
-                e.UserId,
-                e.AccessLevel,
-                e.CreatedAtUtc,
-                e.UpdatedAtUtc,
-                RowVersion: RowVersionHelper.ToBase64(e.RowVersion)
+        var rows = await query.ToListAsync();
+
+        var dtos = rows
+            .Select(x => new TeamAccessReadDto(
+                x.Access.AccessId,
+                x.Access.TeamId,
+                x.Access.UserId,
+                UserName: x.User.UserName,
+                Email: x.User.Email,
+                x.Access.AccessLevel,
+                x.Access.CreatedAtUtc,
+                x.Access.UpdatedAtUtc,
+                RowVersion: RowVersionHelper.ToBase64(x.Access.RowVersion)
             ))
             .ToList()
             .AsReadOnly();
@@ -165,9 +179,36 @@ public sealed class TeamAccessService
                 $"TeamAccess with id '{routeId}' not found.");
         }
 
+        byte[] incomingRowVersion;
+        try
+        {
+            incomingRowVersion = RowVersionHelper.FromBase64(dto.RowVersion);
+        }
+        catch
+        {
+            return Result.ValidationFailure(new[]
+            {
+                new ValidationErrorModel(
+                    nameof(dto.RowVersion),
+                    "Invalid RowVersion format.")
+            });
+        }
+
+        _dbContext.Entry(entity)
+            .Property(e => e.RowVersion)
+            .OriginalValue = incomingRowVersion;
+
         entity.AccessLevel = dto.AccessLevel;
 
-        await _dbContext.SaveChangesAsync();
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Result.Concurrency(
+                "The record was modified by another user.");
+        }
 
         _logger.LogInformation(
             "TeamAccess updated successfully. AccessId: {AccessId}",
@@ -201,9 +242,36 @@ public sealed class TeamAccessService
                 $"TeamAccess with id '{routeId}' not found.");
         }
 
+        byte[] incomingRowVersion;
+        try
+        {
+            incomingRowVersion = RowVersionHelper.FromBase64(dto.RowVersion);
+        }
+        catch
+        {
+            return Result.ValidationFailure(new[]
+            {
+                new ValidationErrorModel(
+                    nameof(dto.RowVersion),
+                    "Invalid RowVersion format.")
+            });
+        }
+
+        _dbContext.Entry(entity)
+            .Property(e => e.RowVersion)
+            .OriginalValue = incomingRowVersion;
+
         _dbContext.TeamAccesses.Remove(entity);
 
-        await _dbContext.SaveChangesAsync();
+        try
+        {
+            await _dbContext.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Result.Concurrency(
+                "The record was modified by another user.");
+        }
 
         _logger.LogInformation(
             "TeamAccess deleted successfully. AccessId: {AccessId}",
