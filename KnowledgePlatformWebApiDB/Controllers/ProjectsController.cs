@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
 
+// All endpoints require a valid JWT token.
+// ProjectAdmin: full access — create, read, update, delete.
+// ProjectLead, TeamMember: read only.
+[Authorize]
 [Route("api/[controller]")]
 public sealed class ProjectsController : BaseApiController
 {

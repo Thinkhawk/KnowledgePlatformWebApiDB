@@ -49,11 +49,24 @@ public sealed class TeamService
                 $"Project with id '{dto.ProjectId}' not found.");
         }
 
+        bool duplicateTeamName = await _dbContext.Teams
+            .AnyAsync(t => t.ProjectId == dto.ProjectId
+                        && t.Name.ToUpper() == cleanedName.ToUpper());
+
+        if (duplicateTeamName)
+        {
+            return Result<string>.ValidationFailure(new[]
+            {
+                new ValidationErrorModel(nameof(dto.Name),
+                    $"Team '{cleanedName}' already exists in this project.")
+            });
+        }
+
         var entity = new Team
         {
             Name = cleanedName,
             ProjectId = dto.ProjectId,
-            CreatorId= dto.CreatorId
+            CreatorId = dto.CreatorId
         };
 
         _dbContext.Teams.Add(entity);
@@ -96,6 +109,43 @@ public sealed class TeamService
         );
 
         return Result<TeamReadDto>.Success(dto);
+    }
+
+
+    /// <summary>
+    /// Get all teams for a specific project
+    /// </summary>
+    public async Task<Result<IReadOnlyList<TeamReadDto>>> ReadByProjectAsync(int projectId)
+    {
+        bool projectExists = await _dbContext.Projects
+            .AnyAsync(p => p.ProjectId == projectId);
+
+        if (!projectExists)
+        {
+            return Result<IReadOnlyList<TeamReadDto>>.NotFound(
+                $"Project with id '{projectId}' not found.");
+        }
+
+        var entities = await _dbContext.Teams
+            .AsNoTracking()
+            .Where(t => t.ProjectId == projectId)
+            .OrderBy(t => t.Name)
+            .ToListAsync();
+
+        var dtos = entities
+            .Select(e => new TeamReadDto(
+                e.TeamId,
+                e.ProjectId,
+                e.Name,
+                e.CreatorId,
+                e.CreatedAtUtc,
+                e.UpdatedAtUtc,
+                RowVersionHelper.ToBase64(e.RowVersion)
+            ))
+            .ToList()
+            .AsReadOnly();
+
+        return Result<IReadOnlyList<TeamReadDto>>.Success(dtos);
     }
 
 
