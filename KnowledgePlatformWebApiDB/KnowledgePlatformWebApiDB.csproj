@@ -4,6 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Ignore failed package sources during restore so transient/blocked access to nuget.org
+         does not stop build or migration commands. Remove or set to false after network
+         issues are resolved. -->
+    <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
   </PropertyGroup>
 
   <ItemGroup>
