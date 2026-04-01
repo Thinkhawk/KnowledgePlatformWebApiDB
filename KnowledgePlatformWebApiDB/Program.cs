@@ -85,6 +85,8 @@ builder.Services
     {
         options.JsonSerializerOptions.UnmappedMemberHandling =
             System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow;
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
     });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
@@ -105,6 +107,22 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 builder.Services.AddAuthorization();
 
+// 6. CORS CONFIGURATION
+var angularCorsPolicy = builder.Configuration["MyAppSettings:AngularCORSPolicyName"] ?? "AngularPolicy";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(angularCorsPolicy, policy =>
+    {
+        policy.WithOrigins(
+            "http://localhost:4200",
+            "http://localhost:53438"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
+    });
+});
+
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 
@@ -116,11 +134,6 @@ builder.Services.AddScoped<TeamAccessService>();
 builder.Services.AddScoped<NoteService>();
 builder.Services.AddScoped<UserAccessService>();
 
-
-
-/***********************************************************************************/
-/************************************ BUILDING *************************************/
-/***********************************************************************************/
 
 var app = builder.Build();
 
@@ -153,6 +166,10 @@ using (var scope = app.Services.CreateScope())
 app.UseHttpsRedirection();
 
 app.UseRouting();
+
+// Apply CORS policy
+var corsPolicyName = builder.Configuration["MyAppSettings:AngularCORSPolicyName"] ?? "AngularPolicy";
+app.UseCors(corsPolicyName);
 
 app.UseAuthentication();
 

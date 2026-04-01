@@ -135,30 +135,38 @@ namespace KnowledgePlatformWebApiDB.Data.Data
         // --------------------------------------------------
         private static async Task SeedUsers(UserManager<ApplicationUser> userManager)
         {
-            var adminUser = await userManager.FindByNameAsync("admin");
+            await EnsureUser(userManager, "admin",      "admin@test.com",        "Password@123", "ProjectAdmin");
+            await EnsureUser(userManager, "nidhi_test", "nidhi@test.com",        "Password@123", "TeamMember");
+            await EnsureUser(userManager, "nidhi2",     "nidhi@example.com",     "Password@123", "TeamMember");
+        }
 
-            if (adminUser != null)
+        private static async Task EnsureUser(
+            UserManager<ApplicationUser> userManager,
+            string username,
+            string email,
+            string password,
+            string role)
+        {
+            if (await userManager.FindByNameAsync(username) != null)
                 return;
 
             var user = new ApplicationUser
             {
-                UserName = "admin",
-                Email = "admin@test.com",
+                UserName = username,
+                Email = email,
                 EmailConfirmed = true
             };
 
-            var result = await userManager.CreateAsync(user, "Password@123");
+            var result = await userManager.CreateAsync(user, password);
 
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
-                {
-                    Console.WriteLine($"User Seeder Error: {error.Description}");
-                }
+                    Console.WriteLine($"User Seeder Error ({username}): {error.Description}");
                 return;
             }
 
-            await userManager.AddToRoleAsync(user, "ProjectAdmin");
+            await userManager.AddToRoleAsync(user, role);
         }
     }
 }

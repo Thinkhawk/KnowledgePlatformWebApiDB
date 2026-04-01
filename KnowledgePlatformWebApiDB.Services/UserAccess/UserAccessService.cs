@@ -47,8 +47,8 @@ public sealed class UserAccessService
             return Result<IReadOnlyList<ProjectAccessReadDto>>.NotFound($"User with ID '{userId}' not found.");
         }
 
-        bool isProjectAdmin = await _userManager.IsInRoleAsync(user, "ProjectAdmin"); //
-        bool isProjectLead = await _userManager.IsInRoleAsync(user, "ProjectLead");   //
+        bool isProjectAdmin = await _userManager.IsInRoleAsync(user, "ProjectAdmin");
+        bool isProjectLead  = await _userManager.IsInRoleAsync(user, "ProjectLead");
 
         // 3. Query Logic: Aggregate projects and teams
         var query = _dbContext.Projects.AsNoTracking();
@@ -69,7 +69,7 @@ public sealed class UserAccessService
                 p.Name,
                 p.Description,
                 p.CreatorId,
-                // Check if a ProjectLead is "added" to this project via any team access record
+                // Check if a ProjectLead is assigned to this project via any team access record
                 IsAddedAsLead = isProjectLead && p.Teams.Any(t => t.TeamAccesses.Any(ta => ta.UserId == userId)),
                 Teams = p.Teams.Select(t => new
                 {
@@ -90,24 +90,26 @@ public sealed class UserAccessService
         var results = projectData.Select(p =>
         {
 
-            // RULE: Admins, Project Creators, and Leads added to the project get Full Control (Write access)
-            bool hasFullProjectControl = isProjectAdmin || p.CreatorId == userId || p.IsAddedAsLead;
+            // RULE: ProjectAdmin gets full team management on all projects.
+            // ProjectLead gets team management only on projects they are assigned to.
+            // TeamMember has no team management rights.
+            bool canManageTeams = isProjectAdmin || p.CreatorId == userId || p.IsAddedAsLead;
 
             return new ProjectAccessReadDto(
                 ProjectId: p.ProjectId,
                 ProjectName: p.Name,
                 Description: p.Description,
                 IsProjectCreator: p.CreatorId == userId,
-                HasFullProjectControl: hasFullProjectControl, // UI uses this to grant project-wide write 
+                CanManageTeams: canManageTeams, // true for Admin and assigned Leads; false for Members
                 Teams: p.Teams
-                    .Where(t => hasFullProjectControl ||
+                    .Where(t => canManageTeams ||
                                 t.CreatorId == userId ||
                                 t.ExplicitAccess.HasValue)
                     .Select(t => new TeamAccessInfoDto(
                         TeamId: t.TeamId,
                         TeamName: t.Name,
-                        // RULE: If they have Full Project Control or created the team, they get Level.Write
-                        AccessLevel: (hasFullProjectControl || t.CreatorId == userId)
+                        // RULE: If they can manage teams or created the team, they get Level.Write
+                        AccessLevel: (canManageTeams || t.CreatorId == userId)
                             ? Level.Write
                             : t.ExplicitAccess!.Value,
                         IsTeamCreator: t.CreatorId == userId

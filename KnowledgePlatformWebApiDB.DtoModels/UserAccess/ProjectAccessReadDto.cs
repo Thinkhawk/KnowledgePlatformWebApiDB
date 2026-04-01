@@ -5,6 +5,6 @@ public sealed record ProjectAccessReadDto(
     string ProjectName,
     string? Description,
     bool IsProjectCreator,
-    bool HasFullProjectControl,
+    bool CanManageTeams,
     IReadOnlyList<TeamAccessInfoDto> Teams
 );

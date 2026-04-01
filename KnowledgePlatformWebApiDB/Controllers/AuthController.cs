@@ -41,9 +41,9 @@ namespace KnowledgePlatformWebApiDB.Controllers
             var result = await _authService.CreateUserAsync(dto);
 
             if (!result.Success)
-                return BadRequest(result.Message);
+                return BadRequest(new { detail = result.Message });
 
-            return Ok(result.Message);
+            return Ok(new { detail = result.Message });
         }
 
 

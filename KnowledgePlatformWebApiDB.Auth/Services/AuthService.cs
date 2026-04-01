@@ -54,6 +54,7 @@ namespace KnowledgePlatformWebApiDB.Auth.Services
             {
                 UserName = dto.Username,
                 Email = dto.Email,
+                FullName = dto.FullName,
                 EmailConfirmed = true
             };
 
