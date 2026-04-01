@@ -38,7 +38,7 @@ public sealed class ProjectsController : BaseApiController
     }
 
     // GET ONE PROJECT
-    [Authorize(Roles = "ProjectAdmin")]
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet("{projectId:int}")]
     public async Task<IActionResult> ReadOneProject(int projectId)
     {

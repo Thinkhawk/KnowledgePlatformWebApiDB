@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 public sealed class NotesController : BaseApiController
 {

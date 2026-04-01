@@ -38,6 +38,7 @@ public sealed class TeamsController : BaseApiController
     }
 
     // GET TEAMS BY PROJECT — any authenticated user
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet("/api/projects/{projectId:int}/teams")]
     public async Task<IActionResult> ReadTeamsByProject(int projectId)
     {
@@ -46,7 +47,7 @@ public sealed class TeamsController : BaseApiController
     }
 
     // GET ONE TEAM
-    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
+    [Authorize(Roles = "ProjectAdmin,ProjectLead,TeamMember")]
     [HttpGet("{teamId:int}")]
     public async Task<IActionResult> ReadOneTeam(int teamId)
     {
