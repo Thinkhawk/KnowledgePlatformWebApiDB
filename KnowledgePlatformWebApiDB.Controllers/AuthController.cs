@@ -1,4 +1,4 @@
-﻿using KnowledgePlatformWebApiDB.Auth.DTO;
+using KnowledgePlatformWebApiDB.Auth.DTO;
 using KnowledgePlatformWebApiDB.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +26,7 @@ namespace KnowledgePlatformWebApiDB.Controllers
             var currentEmail = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
 
             return string.Equals(currentUsername, "admin", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(currentEmail, "admin@test.com", StringComparison.OrdinalIgnoreCase);
+                   || string.Equals(currentEmail, "admin@test.com", StringComparison.OrdinalIgnoreCase);
         }
 
         // LOGIN API
@@ -47,7 +47,7 @@ namespace KnowledgePlatformWebApiDB.Controllers
             });
         }
 
-        //Create User(only ProjectAdmin including seeder admin...)
+        //Create User 
         [Authorize(Roles = "ProjectAdmin")]
         [HttpPost("create-user")]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
@@ -60,13 +60,17 @@ namespace KnowledgePlatformWebApiDB.Controllers
             return Ok(result.Message);
         }
 
-        // Change a user's role (only ProjectAdmin)
+        // Change a user's role ( Only the seeded admin may change roles)
         [Authorize(Roles = "ProjectAdmin")]
         [HttpPost("change-role")]
         public async Task<IActionResult> ChangeUserRole([FromBody] ChangeRoleDto dto)
         {
             if (dto == null)
                 return BadRequest("Invalid request.");
+
+            // Only the seeded admin may change roles
+            if (!IsSeededAdmin())
+                return Forbid();
 
             var result = await _authService.ChangeUserRoleAsync(dto.Username, dto.OldRole, dto.NewRole);
             if (!result.Success)
@@ -75,7 +79,7 @@ namespace KnowledgePlatformWebApiDB.Controllers
             return Ok(result.Message);
         }
 
-        // Delete a user (only the seeded admin can access)
+        // Delete a user (only the seeder admin) 
         [Authorize(Roles = "ProjectAdmin")]
         [HttpDelete("delete-user/{username}")]
         public async Task<IActionResult> DeleteUser([FromRoute] string username)
@@ -99,7 +103,7 @@ namespace KnowledgePlatformWebApiDB.Controllers
         }
 
 
-        // CHANGE PASSWORD
+        // CHANGE PASSWORD 
         [Authorize]
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
@@ -139,7 +143,7 @@ namespace KnowledgePlatformWebApiDB.Controllers
             return Ok(users);
         }
 
-        // Get all project admins (only the seeded admin can access..seeder admin excluded)
+        // Get all project admins (only the seeded admin can access)
         [Authorize(Roles = "ProjectAdmin")]
         [HttpGet("project-admins")]
         public async Task<IActionResult> GetProjectAdmins()
@@ -150,9 +154,9 @@ namespace KnowledgePlatformWebApiDB.Controllers
             var users = await _authService.GetProjectAdminsAsync();
 
             var filtered = users
-            .Where(u => !string.Equals(u.Username, "admin", StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(u.Email, "admin@test.com", StringComparison.OrdinalIgnoreCase))
-            .ToList();
+                .Where(u => !string.Equals(u.Username, "admin", StringComparison.OrdinalIgnoreCase)
+                            && !string.Equals(u.Email, "admin@test.com", StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
             return Ok(filtered);
         }
