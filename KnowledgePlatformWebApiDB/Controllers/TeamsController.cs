@@ -1,9 +1,14 @@
 ﻿using KnowledgePlatformWebApiDB.DtoModels.Teams;
 using KnowledgePlatformWebApiDB.Services.Teams;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
 
+// All endpoints require a valid JWT token.
+// ProjectAdmin, ProjectLead: create, read, update, delete teams within assigned projects.
+// TeamMember: read only.
+[Authorize]
 [Route("api/[controller]")]
 public sealed class TeamsController : BaseApiController
 {
@@ -14,7 +19,8 @@ public sealed class TeamsController : BaseApiController
         _teamService = teamService;
     }
 
-    // CREATE TEAM
+    // CREATE TEAM — ProjectAdmin, ProjectLead
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpPost]
     public async Task<IActionResult> CreateTeam([FromBody] TeamCreateDto createDto)
     {
@@ -22,7 +28,7 @@ public sealed class TeamsController : BaseApiController
         return HandleResult(result);
     }
 
-    // GET ALL TEAMS
+    // GET ALL TEAMS — any authenticated user
     [HttpGet]
     public async Task<IActionResult> ReadAllTeams()
     {
@@ -30,7 +36,15 @@ public sealed class TeamsController : BaseApiController
         return HandleResult(result);
     }
 
-    // GET ONE TEAM
+    // GET TEAMS BY PROJECT — any authenticated user
+    [HttpGet("/api/projects/{projectId:int}/teams")]
+    public async Task<IActionResult> ReadTeamsByProject(int projectId)
+    {
+        var result = await _teamService.ReadByProjectAsync(projectId);
+        return HandleResult(result);
+    }
+
+    // GET ONE TEAM — any authenticated user
     [HttpGet("{teamId:int}")]
     public async Task<IActionResult> ReadOneTeam(int teamId)
     {
@@ -38,7 +52,8 @@ public sealed class TeamsController : BaseApiController
         return HandleResult(result);
     }
 
-    // UPDATE TEAM
+    // UPDATE TEAM — ProjectAdmin, ProjectLead
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpPut("{teamId:int}")]
     public async Task<IActionResult> UpdateTeam(int teamId, [FromBody] TeamUpdateDto updateDto)
     {
@@ -46,7 +61,8 @@ public sealed class TeamsController : BaseApiController
         return HandleResult(result);
     }
 
-    // DELETE TEAM
+    // DELETE TEAM — ProjectAdmin, ProjectLead
+    [Authorize(Roles = "ProjectAdmin,ProjectLead")]
     [HttpDelete("{teamId:int}")]
     public async Task<IActionResult> DeleteTeam(int teamId, [FromBody] TeamDeleteDto deleteDto)
     {

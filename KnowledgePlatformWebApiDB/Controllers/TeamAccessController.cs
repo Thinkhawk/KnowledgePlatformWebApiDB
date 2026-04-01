@@ -1,10 +1,13 @@
 ﻿using KnowledgePlatformWebApiDB.DtoModels.TeamAccessDtos;
 using KnowledgePlatformWebApiDB.DtoModels.TeamAccesses;
 using KnowledgePlatformWebApiDB.Services.TeamAccesses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
 
+// Assigning/managing team members requires ProjectAdmin or ProjectLead.
+[Authorize(Roles = "ProjectAdmin,ProjectLead")]
 [Route("api/[controller]")]
 public sealed class TeamAccessController : BaseApiController
 {
@@ -23,11 +26,11 @@ public sealed class TeamAccessController : BaseApiController
         return HandleResult(result);
     }
 
-    // GET ALL Team Access records
+    // GET ALL Team Access records (optionally filtered by teamId)
     [HttpGet]
-    public async Task<IActionResult> ReadAllTeamAccess()
+    public async Task<IActionResult> ReadAllTeamAccess([FromQuery] int? teamId)
     {
-        var result = await _teamAccessService.ReadAllAsync();
+        var result = await _teamAccessService.ReadAllAsync(teamId);
         return HandleResult(result);
     }
 

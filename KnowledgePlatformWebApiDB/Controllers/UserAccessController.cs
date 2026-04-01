@@ -1,8 +1,11 @@
 ﻿using KnowledgePlatformWebApiDB.Services.UserAccess;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
 
+// Any authenticated user may query their own accessible projects and teams (used by the sidebar).
+[Authorize]
 [Route("api/[controller]")]
 public sealed class UserAccessController : BaseApiController
 {

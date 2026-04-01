@@ -1,9 +1,14 @@
 ﻿using KnowledgePlatformWebApiDB.DtoModels.Projects;
 using KnowledgePlatformWebApiDB.Services.Projects;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace KnowledgePlatformWebApiDB.Controllers;
 
+// All endpoints require a valid JWT token.
+// ProjectAdmin: full access — create, read, update, delete.
+// ProjectLead, TeamMember: read only.
+[Authorize]
 [Route("api/[controller]")]
 public sealed class ProjectsController : BaseApiController
 {
@@ -14,7 +19,8 @@ public sealed class ProjectsController : BaseApiController
         _projectService = projectService;
     }
 
-    // CREATE PROJECT
+    // CREATE PROJECT — ProjectAdmin only
+    [Authorize(Roles = "ProjectAdmin")]
     [HttpPost]
     public async Task<IActionResult> CreateProject([FromBody] ProjectCreateDto createDto)
     {
@@ -22,7 +28,7 @@ public sealed class ProjectsController : BaseApiController
         return HandleResult(result);
     }
 
-    // GET ALL PROJECTS
+    // GET ALL PROJECTS — any authenticated user
     [HttpGet]
     public async Task<IActionResult> ReadAllProjects()
     {
@@ -30,7 +36,7 @@ public sealed class ProjectsController : BaseApiController
         return HandleResult(result);
     }
 
-    // GET ONE PROJECT
+    // GET ONE PROJECT — any authenticated user
     [HttpGet("{projectId:int}")]
     public async Task<IActionResult> ReadOneProject(int projectId)
     {
@@ -38,7 +44,8 @@ public sealed class ProjectsController : BaseApiController
         return HandleResult(result);
     }
 
-    // UPDATE PROJECT
+    // UPDATE PROJECT — ProjectAdmin only
+    [Authorize(Roles = "ProjectAdmin")]
     [HttpPut("{projectId:int}")]
     public async Task<IActionResult> UpdateProject(int projectId, [FromBody] ProjectUpdateDto updateDto)
     {
@@ -46,7 +53,8 @@ public sealed class ProjectsController : BaseApiController
         return HandleResult(result);
     }
 
-    // DELETE PROJECT
+    // DELETE PROJECT — ProjectAdmin only
+    [Authorize(Roles = "ProjectAdmin")]
     [HttpDelete("{projectId:int}")]
     public async Task<IActionResult> DeleteProject(int projectId, [FromBody] ProjectDeleteDto deleteDto)
     {
